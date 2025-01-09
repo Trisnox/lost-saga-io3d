@@ -38,7 +38,7 @@ Lost Saga uses y-up axis left handed, while Blender uses z-up axis right handed.
 Objects also appear 100x larger on Blender than on Lost Saga, this can be fixed easily by changing the unit scale into 0.01 on Blender, and increasing the Clip End on 3d view to prevent clipping.
 
 # Special Thanks
-https://cdn.discordapp.com/avatars/168260795233206272/a_0b2d1becd61b1f08965a0a4f87b96c69.gif?size=128
+![zex's pfp](https://cdn.discordapp.com/avatars/168260795233206272/a_0b2d1becd61b1f08965a0a4f87b96c69.gif?size=128)
 Thanks to zex (imageliner on Discord) for showing me the correct rotation for Lost Saga skeleton.
 
 # To-do
