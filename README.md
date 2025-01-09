@@ -1,3 +1,5 @@
+![blender_09-01-2025_17-16-58](https://github.com/user-attachments/assets/81e0ccc4-e4dc-43d4-9dad-47e8f554c572)
+
 # Lost Saga IO3D
 Blender add-on to import/export various Lost Saga formats. Supported files are `skl`/`msh`/`ani`.
 
@@ -15,6 +17,12 @@ Panel is also available on 3d view, labeled `IO3D` on sidebar.
 - Resource Folder path. If set, mesh will automatically import texture if found one.
 - Rename armature bones to Blender or Lost Saga and vice versa
 
+
+
+https://github.com/user-attachments/assets/4989d79a-0754-40c3-8ca6-474f6e8f4927
+
+
+
 # Experimental Features
 ## Animation
 Animation can be imported, as well forming armature from it. Animation is currently imported as-is without handling the axis differences.
@@ -30,6 +38,7 @@ Lost Saga uses y-up axis left handed, while Blender uses z-up axis right handed.
 Objects also appear 100x larger on Blender than on Lost Saga, this can be fixed easily by changing the unit scale into 0.01 on Blender, and increasing the Clip End on 3d view to prevent clipping.
 
 # Special Thanks
+https://cdn.discordapp.com/avatars/168260795233206272/a_0b2d1becd61b1f08965a0a4f87b96c69.gif?size=128
 Thanks to zex (imageliner on Discord) for showing me the correct rotation for Lost Saga skeleton.
 
 # To-do
