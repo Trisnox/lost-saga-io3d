@@ -32,4 +32,4 @@ def decomp_8_bytes(high, low):
     y = ((((high & 0xFFFF)) * sInvMax) * 2.0) - 1.0
     z = (((low >> 16) * sInvMax) * 2.0) - 1.0
     w = (low & 0xFFFF) * sInvMax
-    return mathutils.Quaternion(w, x, y, z)
+    return mathutils.Quaternion((w, x, y, z))

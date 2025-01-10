@@ -215,7 +215,3 @@ def register():
 def unregister():
     bpy.utils.unregister_class(MeshExport)
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
-
-
-if __name__ == "__main__":
-    register()

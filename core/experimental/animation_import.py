@@ -25,12 +25,10 @@ def import_animation(context: bpy.context, filepath: str, fps: int = 60, frame_o
             break
         
     root = context.object
-    if not root.name.startswith('Bip01'):
+    if not any(root.name.startswith(bone_name) for bone_name in ('Bip01', 'origin_empty')):
         raise RuntimeError('Object is not Lost Saga skeleton')
-        
-    bpy.ops.object.select_grouped(extend=True, type='CHILDREN_RECURSIVE')
     
-    empties_objects = [_ for _ in context.selected_objects if _.type == 'EMPTY']
+    empties_objects = [root] + [_ for _ in root.children_recursive]
     
     bones = {}
     for empty in empties_objects:
@@ -76,7 +74,7 @@ def import_animation(context: bpy.context, filepath: str, fps: int = 60, frame_o
                 packed_rotation = struct.unpack('<L', ani[s.o:s.L])[0]
                 qRot = decomp_small_three(packed_rotation)
                 vTrans = struct.unpack('<3f', ani[s.o:s.vpos])
-                vTrans = mathutils.Vector((vTrans[0], vTrans[2], -vTrans[1]))
+                vTrans = mathutils.Vector(vTrans)
                 iTime = struct.unpack('<I', ani[s.o:s.i])[0]
                 frame = int(iTime*fps/1000)
                 keyframe_data[biped_name].append((frame, vTrans, qRot))
@@ -85,7 +83,7 @@ def import_animation(context: bpy.context, filepath: str, fps: int = 60, frame_o
                 dwHigh = struct.unpack('<L', ani[s.o:s.L])[0]
                 dwLow = struct.unpack('<L', ani[s.o:s.L])[0]
                 vTrans = struct.unpack('<3f', ani[s.o:s.vpos])
-                vTrans = mathutils.Vector((vTrans[0], vTrans[2], -vTrans[1]))
+                vTrans = mathutils.Vector(vTrans)
                 qRot = decomp_8_bytes(dwHigh, dwLow)
                 qRot = mathutils.Quaternion(qRot)
                 iTime = struct.unpack('<I', ani[s.o:s.i])[0]
@@ -96,40 +94,95 @@ def import_animation(context: bpy.context, filepath: str, fps: int = 60, frame_o
                 qRot = struct.unpack('<4f', ani[s.o:s.qrot])
                 qRot = mathutils.Quaternion((qRot[3], qRot[0], qRot[1], qRot[2]))
                 vTrans = struct.unpack('<3f', ani[s.o:s.vpos])
-                vTrans = mathutils.Vector((vTrans[0], vTrans[2], -vTrans[1]))
+                vTrans = mathutils.Vector(vTrans)
                 iTime = struct.unpack('<I', ani[s.o:s.i])[0]
                 frame = int(iTime*fps/1000)
                 keyframe_data[biped_name].append((frame, vTrans, qRot))
         
-        error = False
-        not_found = []
-        for biped_name, data in keyframe_data.items():
-            if biped_name in not_found:
-                continue
-            
-            for frame_data in data:
-                frame, vTrans, qRot = frame_data
-            
-                bpy.ops.object.select_all(action='DESELECT')
-                try:
-                    bone = bones[biped_name]
-                    bone.select_set(True)
-                    context.view_layer.objects.active = bone
-                    bone.rotation_mode = 'QUATERNION'
-                    bone.location = vTrans
-                    bone.rotation_quaternion = qRot
-                    bone.keyframe_insert(data_path="rotation_quaternion", frame=frame+frame_offset)
-                except KeyError:
-                    error = True
-                    not_found.append(biped_name)
-                    print(f'Warning, bone {biped_name} is not found')
-                    break
+    error = False
+    not_found = []
+    for biped_name, data in keyframe_data.items():
+        if biped_name in not_found:
+            continue
         
-        def draw(self, context):
-            self.layout.label(text='One or more bone are not found, please check console for more info')
+        bpy.ops.object.select_all(action='DESELECT')
         
-        if error:
-            context.window_manager.popup_menu(draw, title='WARNING | MISSING BONE', icon='WARNING_LARGE')
+        try:
+            bone = bones[biped_name]
+        except KeyError:
+            error = True
+            not_found.append(biped_name)
+            print(f'Warning, bone {biped_name} is not found')
+            break
+        
+        bone.select_set(True)
+        context.view_layer.objects.active = bone
+        bone.rotation_mode = 'QUATERNION'
+        bone_fcurves_location = []
+        bone_fcurves_rotation = []
+        
+        action = bpy.data.actions.get(bone.name, None)
+        if not action:
+            action = bpy.data.actions.new(name=bone.name)
+            bone.animation_data_create()
+            
+        bone.animation_data.action = action
+            
+        if not action.fcurves:
+            bone_fcurves_location = [action.fcurves.new(data_path = 'location', index = i, action_group = bone.name) for i in range(3)]
+            bone_fcurves_rotation = [action.fcurves.new(data_path = 'rotation_quaternion', index = i, action_group = bone.name) for i in range(4)]
+        else:
+            bone_fcurves_location = [action.fcurves[i] for i in range(3)]
+            bone_fcurves_rotation = [action.fcurves[i] for i in range(3, 7)]
+        
+        for index, fcurve in enumerate(bone_fcurves_location):
+            fcurve.keyframe_points.add(len(data) + frame_offset)
+            
+            # There is a high certainty that ver8 animation cause this out of index error
+            for frame, location, rotation in data:
+                if frame >= len(data):
+                    continue
+                    
+                keyframe = fcurve.keyframe_points[frame + frame_offset]
+                keyframe.co = frame + frame_offset, location[index]
+                keyframe.interpolation = 'LINEAR'
+                
+            fcurve.update()
+        
+        for index, fcurve in enumerate(bone_fcurves_rotation):
+            fcurve.keyframe_points.add(len(data) + frame_offset)
+            
+            for frame, location, rotation in data:
+                if frame >= len(data):
+                    continue
+                    
+                keyframe = fcurve.keyframe_points[frame + frame_offset]
+                keyframe.co = frame + frame_offset, rotation[index]
+                keyframe.interpolation = 'LINEAR'
+                
+            fcurve.update()
+            
+
+    if not bones.get('origin_empty', None):
+        origin_empty = bpy.data.objects.new('origin_empty', None)
+        origin_empty.empty_display_type = 'PLAIN_AXES'
+        bpy.context.scene.collection.objects.link(origin_empty)
+
+        bpy.ops.object.select_all(action='DESELECT')
+        origin_empty.select_set(True)
+        root.select_set(True)
+        bpy.context.view_layer.objects.active = origin_empty
+        bpy.ops.object.parent_set()
+
+        origin_empty.rotation_euler.x = math.radians(90)
+        origin_empty.rotation_euler.z = math.radians(180)
+        origin_empty.scale.x = -1
+    
+    def draw(self, context):
+        self.layout.label(text='One or more bone are not found, please check console for more info')
+    
+    if error:
+        context.window_manager.popup_menu(draw, title='WARNING | MISSING BONE', icon='WARNING_LARGE')
 
     return {'FINISHED'}
 

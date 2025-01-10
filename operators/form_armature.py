@@ -35,12 +35,10 @@ def form_armature(context: bpy.context):
             break
         
     root = context.object
-    if not root.name.startswith('Bip01'):
+    if not any(root.name.startswith(bone_name) for bone_name in ('Bip01', 'origin_empty')):
         raise RuntimeError('Object is not Lost Saga skeleton')
-
-    bpy.ops.object.select_grouped(extend=True, type='CHILDREN_RECURSIVE')
     
-    empties = [_ for _ in context.selected_objects if _.type == 'EMPTY']
+    empties = [root] + [_ for _ in root.children_recursive]
 
     armature_data = bpy.data.armatures.new('retarget_armature')
     armature_object = bpy.data.objects.new('retarget_armature', armature_data)
