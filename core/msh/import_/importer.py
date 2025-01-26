@@ -10,7 +10,7 @@ from ...classes.mesh import MeshData, BlendWeight
 def is_mesh_file(bytes):
     return bytes == 4739917
 
-def import_mesh(context: bpy.context, filepath: str, resource_folder: str = None):
+def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str = None):
     IOFVF_POSITION	= 1<<0
     IOFVF_POSITION2	= 1<<1
     IOFVF_POSITIONW = 1<<2
@@ -184,6 +184,7 @@ def import_mesh(context: bpy.context, filepath: str, resource_folder: str = None
 
     if normal:
         mesh_data.shade_smooth()
+        normal = [(n[0], -n[2], n[1]) for n in normal]
         mesh_data.normals_split_custom_set_from_vertices(normal)
 
     if texture_uv:
@@ -279,6 +280,7 @@ def import_mesh(context: bpy.context, filepath: str, resource_folder: str = None
         else:
             create_material()
     # Hand usually uses their body texture, so we'll use their body texture if there are any
+    #
     elif 'hand' in mesh_name:
         mesh_name = mesh_name.replace('hand', 'body')
         material = bpy.data.materials.get(mesh_name)
@@ -317,7 +319,7 @@ class LosaMesh(Operator, ImportHelper):
         folder = path.parent
         for file in self.files:
             filepath = str(folder.joinpath(file.name))
-            import_mesh(context, filepath, context.scene.resource_path.path)
+            import_mesh(context, filepath, context.scene.io3d_resource_path.path)
             
         return {'FINISHED'}
 

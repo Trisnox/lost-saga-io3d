@@ -1,6 +1,8 @@
 import bpy
+import math
 
-def attach_armature(context: bpy.context):
+
+def attach_armature(context: bpy.types.Context):
     selected = context.selected_objects
 
     meshes = [_ for _ in selected if _.type == 'MESH']
@@ -14,7 +16,14 @@ def attach_armature(context: bpy.context):
     
     armature = armature[0]
 
+    rotation_correction = armature.get('Rotation Correction', False)
     for mesh in meshes:
+        if rotation_correction:
+            mesh.rotation_mode = 'XYZ'
+            mesh.rotation_euler.x = math.radians(-90)
+            mesh.rotation_euler.y = math.radians(180)
+            mesh.scale.x = -1
+
         modifier = mesh.modifiers.new(name='Armature', type='ARMATURE')
         modifier.object = armature
         

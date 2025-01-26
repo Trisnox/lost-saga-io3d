@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Lost Saga IO3D Mesh",
     "author": "Trisnox",
-    "version": (1, 0, 1),
+    "version": (1, 1, 0),
     "blender": (4, 1, 0),
     "location": "View3D > Sidebar > IO3D",
     "description": "Tools to import/export various Lost Saga formats",
@@ -12,25 +12,36 @@ import bpy
 
 from . import addon_updater_ops
 
+from .properties import resource_path, animation_data, animation_panel_props
+
 from .core.skl.import_ import importer as skl_importer
 from .core.msh.import_ import importer as msh_importer
-from .operators import attach_armature, form_armature, rename_bones
+from .core.ani.import_ import importer as ani_importer
+from .operators import apply_animation, attach_armature, form_armature, remove_animation_entry, rename_bones, reset_rest_state, swap_constraints
 
-from .core.experimental import animation_import, mesh_export
+from .core.experimental import mesh_export
 
-from .panels import importer_panel, experimental_panel, updater_panel
+from .panels import animation_panel, experimental_panel, skl_msh_panel, updater_panel
 
 m_bl_info = bl_info
 
 classes = [
+    resource_path,
+    animation_data,
+    animation_panel_props,
     skl_importer,
     msh_importer,
+    ani_importer,
+    apply_animation,
     attach_armature,
     form_armature,
+    remove_animation_entry,
     rename_bones,
-    animation_import,
+    reset_rest_state,
+    swap_constraints,
     mesh_export,
-    importer_panel,
+    skl_msh_panel,
+    animation_panel,
     experimental_panel,
     updater_panel
 ]
@@ -79,18 +90,6 @@ class io3dPreferences(bpy.types.AddonPreferences):
 
 		# Updater draw function, could also pass in col as third arg.
 		addon_updater_ops.update_settings_ui(self, context)
-
-		# Alternate draw function, which is more condensed and can be
-		# placed within an existing draw function. Only contains:
-		#   1) check for update/update now buttons
-		#   2) toggle for auto-check (interval will be equal to what is set above)
-		# addon_updater_ops.update_settings_ui_condensed(self, context, col)
-
-		# Adding another column to help show the above condensed ui as one column
-		col = mainrow.column()
-		col.scale_y = 2
-		ops = col.operator("wm.url_open", text="Open repository ")
-		ops.url=addon_updater_ops.updater.website
 
 def register():
     addon_updater_ops.register(m_bl_info)

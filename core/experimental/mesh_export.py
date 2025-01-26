@@ -3,31 +3,28 @@ import bmesh
 import struct
 import math
 import mathutils
-from mathutils import Vector, Matrix
 
 def convert_to_y_up_left_handed(vector):
-    # Z-up to Y-up: (X, Y, Z) -> (X, Z, -Y)
-    # Right to left handed: Mirror X
     return mathutils.Vector((-vector.x, vector.z, -vector.y))
 
 def convert_normal_to_y_up_left_handed(normal):
-    # Same transformation as positions, but don't mirror X for normals
     return mathutils.Vector((normal.x, normal.z, -normal.y))
 
 def calculate_bounding_box(obj):
-    bbox_corners = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
+    bbox_corners = [obj.matrix_world @ mathutils.Vector(corner) for corner in obj.bound_box]
     
     converted_corners = [convert_to_y_up_left_handed(corner) for corner in bbox_corners]
     
-    bbox_min = Vector(map(min, zip(*converted_corners)))
-    bbox_max = Vector(map(max, zip(*converted_corners)))
+    bbox_min = mathutils.Vector(map(min, zip(*converted_corners)))
+    bbox_max = mathutils.Vector(map(max, zip(*converted_corners)))
     
     center = (bbox_max + bbox_min) / 2
     radius = max((bbox_max - center).length, (bbox_min - center).length)
     
     return bbox_min, bbox_max, radius
 
-def export_mesh(context: bpy.context, filepath: str):
+
+def export_mesh(context: bpy.types.Context, filepath: str):
     main_mesh = context.view_layer.objects.active
     bpy.ops.object.select_all(action='DESELECT')
     main_mesh.select_set(True)
@@ -95,10 +92,10 @@ def export_mesh(context: bpy.context, filepath: str):
         vertex_count = len(mesh_data.vertices)
         face_count = len(mesh_data.polygons)
         
-        f.write(struct.pack('<I', 0))  # min_index
-        f.write(struct.pack('<I', vertex_count))  # vertex_count
-        f.write(struct.pack('<I', 0))  # index_start
-        f.write(struct.pack('<I', face_count))  # face_count
+        f.write(struct.pack('<I', 0))
+        f.write(struct.pack('<I', vertex_count))
+        f.write(struct.pack('<I', 0))
+        f.write(struct.pack('<I', face_count))
         
         f.write(struct.pack('<I', vertex_count))
         

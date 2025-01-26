@@ -28,14 +28,14 @@ def vpos_to_matrix(vpos):
     rMatrix = mathutils.Matrix.Rotation(0, 3, vpos)
     return rMatrix @ bMatrix
 
-def form_armature(context: bpy.context):
-    while True:
+def form_armature(context: bpy.types.Context, is_static_call: bool = False, skip_check: bool = False):
+    while True and not skip_check:
         res = bpy.ops.object.select_grouped(extend=True, type='PARENT')
         if res == {'CANCELLED'}:
             break
         
     root = context.object
-    if not any(root.name.startswith(bone_name) for bone_name in ('Bip01', 'origin_empty')):
+    if not any(root.name.startswith(bone_name) for bone_name in ('Bip01', 'origin_correction')):
         raise RuntimeError('Object is not Lost Saga skeleton')
     
     empties = [root] + [_ for _ in root.children_recursive]
@@ -67,8 +67,17 @@ def form_armature(context: bpy.context):
         
         bones[bone_name] = edit_bone
         if empty.parent:
-            edit_bone.parent = bones[empty.parent.name]
-        
+            # This problem only occur for mesh armature, since the origin correction needs to be skipped
+            # so that it will deform correctly for meshes
+            try:
+                edit_bone.parent = bones[empty.parent.name.rsplit('.', 1)[0]]
+            except KeyError:
+                pass
+
+    
+    if is_static_call:
+        return armature_object
+    
     bpy.ops.object.mode_set(mode='POSE')
     for bone, empty in zip(armature_object.pose.bones, empties):
         const = bone.constraints.new('COPY_TRANSFORMS')
@@ -78,13 +87,11 @@ def form_armature(context: bpy.context):
     
     return {'FINISHED'}
 
-from bpy_extras.io_utils import ImportHelper
-from bpy.props import StringProperty, BoolProperty, EnumProperty, CollectionProperty
-from bpy.types import Operator, PropertyGroup
+from bpy.types import Operator
 
 
 class ArmatureForm(Operator):
-    """Form/retarget an armature from empties object. Experimental"""
+    """Form/retarget an armature from empties object"""
     bl_idname = "io3d.retarget" 
     bl_label = "Form/retarget armature from empty object"
     
@@ -95,6 +102,12 @@ class ArmatureForm(Operator):
     
     def execute(self, context):
         return form_armature(context)
+    
+    @staticmethod
+    def generate_with_return(context, skip_check: bool = False):
+        """Used for SKL importing, returns the object of generated armature"""
+        return form_armature(context, True, skip_check)
+
 
 def register():
     bpy.utils.register_class(ArmatureForm)

@@ -21,15 +21,6 @@ class EXPERIMENTAL_PANEL(bpy.types.Panel):
         col.label(text='before exporting, no need for')
         col.label(text='triangulate/flip uv maps, etc')
         col.operator('io3d.mesh_export', text='Export Mesh', icon='OUTLINER_OB_MESH')
-        
-        col = layout.column()
-        col.label(text='Animation:', icon='ANIM')
-        col.label(text='In order to import animation,')
-        col.label(text='import armature as empty, select')
-        col.label(text='the empty, and then import')
-        col.label(text='animaion')
-        col.operator('io3d.animation_import', text='Import Animation', icon='ANIM')
-        col.operator('io3d.retarget', text='Form/Retarget Armature', icon='OUTLINER_OB_ARMATURE')
 
 def register():
     bpy.utils.register_class(EXPERIMENTAL_PANEL)

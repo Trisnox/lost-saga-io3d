@@ -24,7 +24,7 @@ def blender_to_losa(name):
     
     return 'Bip01 ' + name
 
-def rename_bones(context: bpy.context):
+def rename_bones(context: bpy.types.Context):
     armature = context.view_layer.objects.active
     armature_data = armature.data
     for bone in armature_data.bones:
