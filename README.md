@@ -22,7 +22,7 @@ Panel is also available on 3d view, labeled `IO3D` on sidebar.
 
 
 
-https://github.com/user-attachments/assets/4989d79a-0754-40c3-8ca6-474f6e8f4927
+https://github.com/user-attachments/assets/2c662074-ac3d-4375-89b9-d9b0097f9d27
 
 
 
