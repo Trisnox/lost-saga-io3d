@@ -280,7 +280,6 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
         else:
             create_material()
     # Hand usually uses their body texture, so we'll use their body texture if there are any
-    #
     elif 'hand' in mesh_name:
         mesh_name = mesh_name.replace('hand', 'body')
         material = bpy.data.materials.get(mesh_name)
@@ -295,7 +294,7 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
     return {'FINISHED'}
 
 from bpy_extras.io_utils import ImportHelper
-from bpy.props import StringProperty, BoolProperty, EnumProperty, CollectionProperty
+from bpy.props import StringProperty, CollectionProperty
 from bpy.types import Operator, PropertyGroup
 
 
@@ -312,7 +311,7 @@ class LosaMesh(Operator, ImportHelper):
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )
     
-    files: CollectionProperty(type=bpy.types.PropertyGroup)
+    files: CollectionProperty(type=PropertyGroup)
     
     def execute(self, context):
         path = pathlib.Path(self.filepath)

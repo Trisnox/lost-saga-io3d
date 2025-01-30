@@ -1,7 +1,7 @@
 import bpy
 
 
-def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int):
+def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, frame_range: str, frame_start: int, frame_end: int):
     if context.active_object.type == 'ARMATURE':
         mode = 'ARMATURE'
         try:
@@ -49,6 +49,7 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int):
 
         armature_object.animation_data.action = action
 
+    is_any_keyframe = False
     anim_data = context.scene.io3d_animation_data
     keyframe_data = anim_data.entry[anim_data.active_entry_index]
     # frames = keyframe_data.frames
@@ -80,7 +81,6 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int):
             action = bpy.data.actions.get(bone.name, None)
             if not action:
                 action = bpy.data.actions.new(name=bone.name)
-                is_action_new = True
 
             if not bone.animation_data:
                 bone.animation_data_create()
@@ -107,28 +107,42 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int):
         # Instead of allocating keyframe points based off the length of the keyframe data,
         # it will allocate using the last entry keyframe instead
         for index, fcurve in enumerate(bone_fcurves_location):
-            fcurve.keyframe_points.add(frames + frame_offset)
+            fcurve.keyframe_points.add(frames + 1 + frame_offset)
 
             for frame, location, rotation in data:
-                frame = int(frame*fps/1000) + frame_offset
+                frame = int(round((frame*fps) / 1000)) + frame_offset
+
+                if frame_range == 'PARTIAL':
+                    if not frame_start <= frame - frame_offset <= frame_end:
+                        continue
 
                 keyframe = fcurve.keyframe_points[frame]
                 keyframe.co = frame, location[index]
                 keyframe.interpolation = 'LINEAR'
+                is_any_keyframe = True
 
             fcurve.update()
 
         for index, fcurve in enumerate(bone_fcurves_rotation):
-            fcurve.keyframe_points.add(frames + frame_offset)
+            fcurve.keyframe_points.add(frames + 1 + frame_offset)
 
             for frame, location, rotation in data:
-                frame = int(frame*fps/1000) + frame_offset
+                frame = int(round((frame*fps) / 1000)) + frame_offset
+
+                if frame_range == 'PARTIAL':
+                    if not frame_start <= frame - frame_offset <= frame_end:
+                        continue
 
                 keyframe = fcurve.keyframe_points[frame]
                 keyframe.co = frame, rotation[index]
                 keyframe.interpolation = 'LINEAR'
+                is_any_keyframe = True
 
             fcurve.update()
+
+        # Oversight:
+        # If frame_set is used, and the frame is set to 0, the 0th frame will reverted to this rest pos/rot
+        # Solution is to check whether the frame 0 is accessed or not
 
         # Alright
         # Since the initial pos/rot is not the same as rest position, I had to make it so that it uses rest pos/rot for the frame 0 only
@@ -145,6 +159,7 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int):
         fcurve.update()
 
         for index, fcurve in enumerate(bone_fcurves_rotation):
+            fcurve.keyframe_points.add(0)
             keyframe = fcurve.keyframe_points[0]
             keyframe.co = 0, rest_rotation[index]
             keyframe.interpolation = 'LINEAR'
@@ -160,6 +175,12 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int):
     if armature_warning:
         def draw(self, context):
             self.layout.label(text='You are attempting to apply animation into armature. It is not recommended due to offset issues.')
+
+        context.window_manager.popup_menu(draw, title='INFO', icon='INFO')
+
+    if is_any_keyframe:
+        def draw(self, context):
+            self.layout.label(text='No keyframe within range')
 
         context.window_manager.popup_menu(draw, title='INFO', icon='INFO')
 
@@ -180,16 +201,20 @@ class ApplyAnimation(Operator):
         return object is not None and object.type in ('EMPTY', 'ARMATURE')
 
     def execute(self, context):
-        anim_prop = context.scene.io3d_anim_props
-        fps = context.scene.render.fps if anim_prop.use_current_fps else anim_prop.override_fps
+        scene = context.scene
+        anim_prop = scene.io3d_anim_props
+        if anim_prop.use_current_fps:
+            fps = scene.render.fps if scene.render.frame_map_old == scene.render.frame_map_new else scene.render.frame_map_old
+        else:
+            fps = anim_prop.override_fps
         if anim_prop.insert_at == 'CURRENT':
             frame_offset = context.scene.frame_current 
         elif anim_prop.insert_at == 'FIRST':
-            frame_offset = 0
+            frame_offset = 1
         else:
             frame_offset = anim_prop.frame_set
 
-        return apply_animation(context, fps, frame_offset)
+        return apply_animation(context, fps, frame_offset, anim_prop.frame_range, anim_prop.frame_start, anim_prop.frame_end)
 
 def register():
     bpy.utils.register_class(ApplyAnimation)

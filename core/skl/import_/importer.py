@@ -69,18 +69,17 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
         # Either LocalTM or ObjectTM implementation works, you can use either quaternion for bone rotation
         # But for animation, you only need to import armature as empty and using the LocalTMVPos
         LocalTMvPos = struct.unpack('<3f', skl[s.o:s.vpos])
-        # LocalTMvPos = mathutils.Vector((LocalTMvPos[0], LocalTMvPos[2], LocalTMvPos[1]))
         LocalTMvPos = mathutils.Vector(LocalTMvPos)
 
         LocalTMqRot = struct.unpack('<4f', skl[s.o:s.qrot])
-        # LocalTMqRot = mathutils.Quaternion((LocalTMqRot[3], -LocalTMqRot[0], -LocalTMqRot[2], -LocalTMqRot[1]))
         x, y, z, w = LocalTMqRot
         LocalTMqRot = mathutils.Quaternion((w, x, y, z))
 
         # Unused
         ObjectTMvPos = mathutils.Vector(struct.unpack('<3f', skl[s.o:s.vpos]))
         ObjectTMqRot = struct.unpack('<4f', skl[s.o:s.qrot])
-        ObjectTMqRot = mathutils.Quaternion((-ObjectTMqRot[3], -ObjectTMqRot[0], ObjectTMqRot[2], ObjectTMqRot[1])) # Likely xyzw order
+        x, y, z, w = ObjectTMqRot
+        ObjectTMqRot = mathutils.Quaternion((w, x, y, z))
         
         kObjectTMmatrix = struct.unpack('<16f', skl[s.o:s.matrix])
         kObjectTMmatrix = mathutils.Matrix([kObjectTMmatrix[x:x+4] for x in range(0, len(kObjectTMmatrix),4)]).transposed()

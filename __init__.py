@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Lost Saga IO3D Mesh",
     "author": "Trisnox",
-    "version": (1, 1, 0),
+    "version": (1, 2, 0),
     "blender": (4, 1, 0),
     "location": "View3D > Sidebar > IO3D",
     "description": "Tools to import/export various Lost Saga formats",
@@ -12,12 +12,14 @@ import bpy
 
 from . import addon_updater_ops
 
-from .properties import resource_path, animation_data, animation_panel_props
+from .properties import animation_data, animation_panel_props, skl_msh_panel_props
 
 from .core.skl.import_ import importer as skl_importer
 from .core.msh.import_ import importer as msh_importer
 from .core.ani.import_ import importer as ani_importer
-from .operators import apply_animation, attach_armature, form_armature, remove_animation_entry, rename_bones, reset_rest_state, swap_constraints
+from .core.ani.export import exporter as ani_exporter
+
+from .operators import apply_animation, attach_armature, flip_pose, form_armature, frame_remapping, mirror_bone, remove_animation_entry, rename_bones, reset_rest_state, scene_setup, swap_constraints
 
 from .core.experimental import mesh_export
 
@@ -26,18 +28,23 @@ from .panels import animation_panel, experimental_panel, skl_msh_panel, updater_
 m_bl_info = bl_info
 
 classes = [
-    resource_path,
     animation_data,
     animation_panel_props,
+    skl_msh_panel_props,
     skl_importer,
     msh_importer,
     ani_importer,
+    ani_exporter,
     apply_animation,
     attach_armature,
+    flip_pose,
     form_armature,
+    frame_remapping,
+    mirror_bone,
     remove_animation_entry,
     rename_bones,
     reset_rest_state,
+    scene_setup,
     swap_constraints,
     mesh_export,
     skl_msh_panel,

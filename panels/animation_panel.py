@@ -2,12 +2,14 @@ import bpy
 
 class ANIMATION_UL_entries(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        scene = context.scene
+        fps = scene.render.fps if scene.io3d_anim_props.use_current_fps else scene.io3d_anim_props.override_fps
         if item:
             row = layout.row(align=True)
             row.prop(item, "name", text="", icon='ARMATURE_DATA', emboss=False, expand=True)
             row = row.row()
             row.alignment = 'RIGHT'
-            row.label(text = str(item.frames))
+            row.label(text = str(int(round((item.total_time * fps) / 1000)) + 1))
 
 class ANIMATION_PANEL(bpy.types.Panel):
     bl_category = 'IO3D'
@@ -24,17 +26,28 @@ class ANIMATION_PANEL(bpy.types.Panel):
         row = layout.row()
         row.label(text='Utility:', icon='OPTIONS')
         col = layout.column()
+        col.operator('io3d.flip_pose', text='Flip pose', icon='GROUP_BONE')
+        col = layout.column()
+        col.operator('io3d.mirror_pose', text='Mirror pose', icon='MOD_MIRROR')
+        col = layout.column()
         col.operator('io3d.reset_rest', text='Reset rest state', icon='ARMATURE_DATA')
+        col = layout.column()
+        col.prop(anim_props, 'mirror_target')
+        row = layout.row()
+        row.prop(anim_props, 'location')
+        row.prop(anim_props, 'rotation')
+        col = layout.column()
         col.operator('io3d.swap_constraints', text='Swap armature display', icon='MOD_ARMATURE')
+        col.operator('io3d.frame_remap', text='Remap frames', icon='MOD_TIME')
+
+        row = layout.row()
+        row.label(text='Animation:', icon='POSE_HLT')
+        col = layout.column()
+        col.operator('io3d.anim_export', text='Export Animation', icon='ANIM')
 
         col = layout.column()
         col.label(text='In order to use animation, import')
         col.label(text='skeleton using advanced mode')
-
-        row = layout.row()
-        row.label(text='Animation:', icon='POSE_HLT')
-        # col = layout.column()
-        # col.operator('io3d.animation_export', text='Export Animation', icon='ANIM')
 
         row = layout.row()
         row.label(text='')
@@ -63,6 +76,13 @@ class ANIMATION_PANEL(bpy.types.Panel):
         row = row.row()
         row.enabled = not anim_props.use_current_fps
         row.prop(anim_props, 'override_fps')
+
+        row = layout.row()
+        row.prop(anim_props, 'frame_range')
+        row = layout.row()
+        row.enabled = anim_props.frame_range == 'PARTIAL'
+        row.prop(anim_props, 'frame_start')
+        row.prop(anim_props, 'frame_end')
 
         row = layout.row()
         row.prop(anim_props, 'insert_at')

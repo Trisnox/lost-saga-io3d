@@ -3,13 +3,17 @@ import mathutils
 
 
 def reset_rest(context: bpy.types.Context):
+    anim_props = context.scene.io3d_anim_props
     bones = context.selected_pose_bones if context.object.type == 'ARMATURE' else [_ for _ in context.selected_objects if _.type == 'EMPTY']
 
     for bone in bones:
-        location = mathutils.Vector((bone['Position Rest X'], bone['Position Rest Y'], bone['Position Rest Z']))
-        rotation = mathutils.Quaternion((bone['Quaternion Rest W'], bone['Quaternion Rest X'], bone['Quaternion Rest Y'], bone['Quaternion Rest Z']))
-        bone.location = location
-        bone.rotation_quaternion = rotation
+        if anim_props.location:
+            location = mathutils.Vector((bone['Position Rest X'], bone['Position Rest Y'], bone['Position Rest Z']))
+            bone.location = location
+            
+        if anim_props.rotation:
+            rotation = mathutils.Quaternion((bone['Quaternion Rest W'], bone['Quaternion Rest X'], bone['Quaternion Rest Y'], bone['Quaternion Rest Z']))
+            bone.rotation_quaternion = rotation
 
     return {'FINISHED'}
 

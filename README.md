@@ -40,10 +40,10 @@ Objects also appear 100x larger on Blender than on Lost Saga, this is because Lo
 Thanks to zex (imageliner on Discord) for showing me the correct rotation for Lost Saga skeleton.
 
 # To-do
-- Animation exporter
+- Animation append (certain animation, like motion, may need to refer to extra bones outside, this idea refers to appending animation to existing animation)
 - Skeleton exporter
 - Texture transparency. Certain texture models might require transparency, especially effects.
-- Events handler (animation have events, which stores certain event such as audio, sfx, fx, and many more. The resource folder can be used for this)
+- Events manager, for both import and export (animation have events, which stores certain event such as audio, sfx, fx, and many more. The resource folder can be used for this)
 
 # Support
 You can contact me through discord ([trisnox](https://discord.com/users/543595002031243300)) or through my [discord server](https://discord.gg/dJUMU9Gkw2).

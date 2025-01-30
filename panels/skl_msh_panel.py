@@ -33,6 +33,7 @@ class SKL_MSH_PANEL(bpy.types.Panel):
         col = layout.column()
         col.operator('io3d.armature_attach', text='Attach Armature', icon='ARMATURE_DATA')
         col.operator('io3d.rename_bones', text='Rename bones', icon='HELP')
+        col.operator('io3d.scene_setup', text='Setup Scene', icon='SCENE_DATA')
 
 def register():
     bpy.utils.register_class(SKL_MSH_PANEL)

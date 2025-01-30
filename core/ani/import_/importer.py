@@ -50,7 +50,7 @@ def import_animation(context: bpy.types.Context, filepath: str):
     for _ in range(total_track):
         biped_name_length = struct.unpack('<I', ani[s.o:s.i])[0]
         biped_name = ani[s.o:s.char(biped_name_length)].decode('utf-8')
-        weight = struct.unpack('<f', ani[s.o:s.f])[0] # always 0 from what it seemed
+        weight = struct.unpack('<f', ani[s.o:s.f])[0] # always 1 from what it seemed
         keyframe_count = struct.unpack('<I', ani[s.o:s.i])[0]
         total_frames = keyframe_count if total_frames < keyframe_count else total_frames
         

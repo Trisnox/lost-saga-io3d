@@ -14,7 +14,7 @@ class ANIMATION_PANEL_PROPERTIES(PropertyGroup):
     override_fps: IntProperty(
         name='fps',
         description='fps to calculate frames for iTime variable',
-        default=60,
+        default=100,
     )
 
     insert_at: EnumProperty(
@@ -32,6 +32,52 @@ class ANIMATION_PANEL_PROPERTIES(PropertyGroup):
         name='frame',
         description='Frame offset to insert animation',
         default=0
+    )
+
+    frame_range: EnumProperty(
+        name="Frame Range",
+        description="Frame range to import animation",
+        items=(
+            ("ALL", "All", "Import animation on all range"),
+            ("PARTIAL", "Partial", "Import animation within frame range"),
+        ),
+        default="ALL",
+    )
+
+    frame_start: IntProperty(
+        name="Frame Start",
+        description="Frame start",
+        min=1,
+        default=1,
+    )
+
+    frame_end: IntProperty(
+        name="Frame End",
+        description="Frame end",
+        min=1,
+        default=100,
+    )
+
+    mirror_target: EnumProperty(
+        name='Mirror Target',
+        description='Choose target to mirror to/from',
+        items=(
+            ('MIRROR', 'Mirror opposite bones', 'Mirror pose from currently selected bones to the opposing bones'),
+            ('COPY', 'Copy opposite bones', 'Copy pose from opposing bones to the currently selected bones'),
+        ),
+        default='MIRROR',
+    )
+
+    location: BoolProperty(
+        name='Location',
+        description='When enabled, Reset Rest and Mirror Pose will also set object\'s location',
+        default=True
+    )
+
+    rotation: BoolProperty(
+        name='Rotation',
+        description='When enabled, Reset Rest and Mirror Pose will also set object\'s rotation',
+        default=True
     )
 
 
