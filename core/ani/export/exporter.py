@@ -97,6 +97,8 @@ def export_anim(context: bpy.types.Context, filepath: str, anim_ver: str, frame_
                         continue
 
                     frame = float(frame - (frame_start-1))
+                else:
+                    frame -= 1.0
 
                 if not anim_data['tracks'][bone_name]['frames']['location'].get(frame):
                     anim_data['tracks'][bone_name]['frames']['location'][frame] = []
@@ -120,6 +122,8 @@ def export_anim(context: bpy.types.Context, filepath: str, anim_ver: str, frame_
                         continue
             
                     frame = float(frame - (frame_start-1)) - 1.0
+                else:
+                    frame -= 1.0
 
                 if latest_keyframe < int(frame):
                     latest_keyframe = int(frame)
