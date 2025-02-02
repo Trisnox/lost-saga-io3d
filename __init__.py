@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Lost Saga IO3D Mesh",
     "author": "Trisnox",
-    "version": (1, 2, 1),
+    "version": (1, 3, 0),
     "blender": (4, 1, 0),
     "location": "View3D > Sidebar > IO3D",
     "description": "Tools to import/export various Lost Saga formats",
@@ -19,7 +19,7 @@ from .core.msh.import_ import importer as msh_importer
 from .core.ani.import_ import importer as ani_importer
 from .core.ani.export import exporter as ani_exporter
 
-from .operators import apply_animation, attach_armature, flip_pose, form_armature, frame_remapping, mirror_bone, remove_animation_entry, rename_bones, reset_rest_state, scene_setup, swap_constraints
+from .operators import apply_animation, attach_armature, flip_pose, form_armature, frame_remapping, mirror_bone, remove_animation_entry, rename_bones, reset_rest_state, retarget_animation, scene_setup, swap_constraints
 
 from .core.experimental import mesh_export
 
@@ -44,6 +44,7 @@ classes = [
     remove_animation_entry,
     rename_bones,
     reset_rest_state,
+    retarget_animation,
     scene_setup,
     swap_constraints,
     mesh_export,

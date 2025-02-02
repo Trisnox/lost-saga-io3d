@@ -1,7 +1,9 @@
 import bpy
+import mathutils
+import numpy as np
 
 
-def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, frame_range: str, frame_start: int, frame_end: int):
+def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, frame_range: str, frame_start: int, frame_end: int, apply_rest: bool):
     if context.active_object.type == 'ARMATURE':
         mode = 'ARMATURE'
         try:
@@ -49,11 +51,11 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
 
         armature_object.animation_data.action = action
 
-    is_any_keyframe = False
     anim_data = context.scene.io3d_animation_data
     keyframe_data = anim_data.entry[anim_data.active_entry_index]
     # frames = keyframe_data.frames
     frames = int(keyframe_data.total_time/fps*1000) # ver8 fix
+    is_retarget = keyframe_data.is_retarget
     for biped_name, data in keyframe_data:
         if biped_name in not_found:
             continue
@@ -68,10 +70,34 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
             not_found.append(biped_name)
             print(f'Warning, bone {biped_name} is not found')
             continue
-
+        
         if mode == 'EMPTY':
             bone.select_set(True)
             context.view_layer.objects.active = bone
+
+        rest_position = [bone['Position Rest X'], bone['Position Rest Y'], bone['Position Rest Z']]
+        rest_rotation = [bone['Quaternion Rest W'], bone['Quaternion Rest X'], bone['Quaternion Rest Y'], bone['Quaternion Rest Z']]
+
+        keyframes = []
+        new_data = []
+        for frame, location, rotation in data:
+            frame = int(round((frame*fps) / 1000)) + frame_offset
+            if frame_range == 'PARTIAL':
+                if not frame_start <= frame - frame_offset <= frame_end:
+                    continue
+            if is_retarget and apply_rest:
+                rest_quaternion = mathutils.Quaternion(rest_rotation)
+                w, x, y, z = rotation
+                rotation = mathutils.Quaternion((w, -x, -y, z))
+                rotation = rest_quaternion @ rotation
+                new_data.append((frame, mathutils.Vector(rest_position), rotation))
+            keyframes.append(frame)
+        data = new_data if new_data else data
+
+        # oops
+        # if it were a list, I could insert a rest keyframe at 0th frame if there are no keyframe at 0 frame
+        # if not data[0][0] == 0:
+        #     data.insert
 
         bone.rotation_mode = 'QUATERNION'
         bone_fcurves_location = []
@@ -103,68 +129,55 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
         if not bone_fcurves_rotation:
             bone_fcurves_rotation = [action.fcurves.new(data_path=data_path_rotation, index=i, action_group=bone.name) for i in range(4)]
 
-        # There is a high certainty that ver8 animation cause out of index error
-        # Instead of allocating keyframe points based off the length of the keyframe data,
-        # it will allocate using the last entry keyframe instead
+        keyframe_count = len(keyframes)
         for index, fcurve in enumerate(bone_fcurves_location):
-            fcurve.keyframe_points.add(frames + 1 + frame_offset)
+            current_keyframe_count = len(fcurve.keyframe_points)
 
-            for frame, location, rotation in data:
-                frame = int(round((frame*fps) / 1000)) + frame_offset
+            # rotation_list = [rotation for _, _, rotation in data]
+            if not current_keyframe_count == 0:
+                coords = np.zeros((keyframe_count + current_keyframe_count) * 2, dtype=np.float64)
+                current_coords = np.zeros(current_keyframe_count * 2, dtype=np.float64)
+                fcurve.keyframe_points.foreach_get('co', current_coords)
+                if frame_offset < fcurve.keyframe_points[0].co[0]:
+                    # This actually harder than I thought
+                    # Appending after last keyframe is easy, but I can't say the same with in between/previous keyframes
+                    raise RuntimeError('Cannot insert in between keyframes')
+                    # fcurve.keyframe_points.clear()
+                    # fcurve.keyframe_points.add(current_keyframe_count)
+                    # current_keyframe_count = 0
+                    # keyframes = keyframes + current_coords[::2].tolist()
+                    # rotation_list.append([(rotation, rotation, rotation, rotation) for rotation in current_coords[1::2]])
+                else:
+                    coords[:current_keyframe_count * 2] = current_coords
+            else:
+                coords = np.zeros(keyframe_count * 2, dtype=np.float64)
 
-                if frame_range == 'PARTIAL':
-                    if not frame_start <= frame - frame_offset <= frame_end:
-                        continue
-
-                keyframe = fcurve.keyframe_points[frame]
-                keyframe.co = frame, location[index]
+            fcurve.keyframe_points.add(keyframe_count)
+            coords[current_keyframe_count * 2::2] = keyframes
+            coords[current_keyframe_count * 2 + 1::2] = [location[index] for _, location, _ in data]
+            # coords[(current_keyframe_count * 2) + 1::2] = [rotation[index] for rotation in rotation_list]
+            fcurve.keyframe_points.foreach_set('co', coords)
+            for keyframe in fcurve.keyframe_points:
                 keyframe.interpolation = 'LINEAR'
-                is_any_keyframe = True
-
-            fcurve.update()
 
         for index, fcurve in enumerate(bone_fcurves_rotation):
-            fcurve.keyframe_points.add(frames + 1 + frame_offset)
+            current_keyframe_count = len(fcurve.keyframe_points)
 
-            for frame, location, rotation in data:
-                frame = int(round((frame*fps) / 1000)) + frame_offset
+            if not current_keyframe_count == 0:
+                coords = np.zeros((keyframe_count + current_keyframe_count) * 2, dtype=np.float64)
+                current_coords = np.zeros(current_keyframe_count * 2, dtype=np.float64)
+                fcurve.keyframe_points.foreach_get('co', current_coords)
 
-                if frame_range == 'PARTIAL':
-                    if not frame_start <= frame - frame_offset <= frame_end:
-                        continue
+                coords[:current_keyframe_count * 2] = current_coords
+            else:
+                coords = np.zeros(keyframe_count * 2, dtype=np.float64)
 
-                keyframe = fcurve.keyframe_points[frame]
-                keyframe.co = frame, rotation[index]
+            fcurve.keyframe_points.add(keyframe_count)
+            coords[current_keyframe_count * 2::2] = keyframes
+            coords[current_keyframe_count * 2 + 1::2] = [rotation[index] for _, _, rotation in data]
+            fcurve.keyframe_points.foreach_set('co', coords)
+            for keyframe in fcurve.keyframe_points:
                 keyframe.interpolation = 'LINEAR'
-                is_any_keyframe = True
-
-            fcurve.update()
-
-        # Oversight:
-        # If frame_set is used, and the frame is set to 0, the 0th frame will reverted to this rest pos/rot
-        # Solution is to check whether the frame 0 is accessed or not
-
-        # Alright
-        # Since the initial pos/rot is not the same as rest position, I had to make it so that it uses rest pos/rot for the frame 0 only
-        # Blender will just insert frame regardless at 0th frame, and the values would be 0, which may mess up some animation
-        rest_position = [bone['Position Rest X'], bone['Position Rest Y'], bone['Position Rest Z']]
-        rest_rotation = [bone['Quaternion Rest W'], bone['Quaternion Rest X'], bone['Quaternion Rest Y'], bone['Quaternion Rest Z']]
-
-        for index, fcurve in enumerate(bone_fcurves_location):
-            fcurve.keyframe_points.add(0)
-            keyframe = fcurve.keyframe_points[0]
-            keyframe.co = 0, rest_position[index]
-            keyframe.interpolation = 'LINEAR'
-
-        fcurve.update()
-
-        for index, fcurve in enumerate(bone_fcurves_rotation):
-            fcurve.keyframe_points.add(0)
-            keyframe = fcurve.keyframe_points[0]
-            keyframe.co = 0, rest_rotation[index]
-            keyframe.interpolation = 'LINEAR'
-
-        fcurve.update()
 
     if bone_missing:
         def draw(self, context):
@@ -178,7 +191,8 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
 
         context.window_manager.popup_menu(draw, title='INFO', icon='INFO')
 
-    if is_any_keyframe:
+    
+    if keyframe_count == 0:
         def draw(self, context):
             self.layout.label(text='No keyframe within range')
 
@@ -214,7 +228,7 @@ class ApplyAnimation(Operator):
         else:
             frame_offset = anim_prop.frame_set
 
-        return apply_animation(context, fps, frame_offset, anim_prop.frame_range, anim_prop.frame_start, anim_prop.frame_end)
+        return apply_animation(context, fps, frame_offset, anim_prop.frame_range, anim_prop.frame_start, anim_prop.frame_end, anim_prop.apply_rest_rotation)
 
 def register():
     bpy.utils.register_class(ApplyAnimation)

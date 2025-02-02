@@ -1,4 +1,5 @@
 import bpy
+import json
 import mathutils
 import pathlib
 import struct
@@ -104,8 +105,25 @@ def import_animation(context: bpy.types.Context, filepath: str):
                 highest_time = iTime if highest_time < iTime else highest_time
         
     basename = pathlib.Path(filepath).stem
-    animation = {basename: keyframe_data, 'frames': total_frames, 'total_time': highest_time}
+    animation = {basename: keyframe_data, 'frames': total_frames, 'total_time': highest_time, 'is_retarget': False}
     context.scene.io3d_animation_data.append(animation)
+
+    return {'FINISHED'}
+
+def import_entry(context: bpy.types.Context, filepath: str):
+    with open(filepath, 'r') as f:
+        anim_data = json.load(f)
+    
+    try:
+        first_item = next(iter(anim_data.values()))
+        keyframe_data = next(iter(first_item.values()))
+        anim_data['frames']
+        anim_data['total_time']
+        anim_data['is_retarget']
+    except (KeyError, StopIteration):
+        raise RuntimeError('Invalid entry file')
+    
+    context.scene.io3d_animation_data.append(anim_data)
 
     return {'FINISHED'}
 
@@ -115,14 +133,14 @@ from bpy.types import Operator
 
 
 class LosaAnim(Operator, ImportHelper):
-    """Import Lost Saga Animation (.ani). Supports importing multiple files at once"""
+    """Import Lost Saga Animation (.ani) or animation entry (.json). Supports importing multiple files at once"""
     bl_idname = "io3d.animation_import" 
     bl_label = "Import Lost Saga Animation (.ani)"
 
     filename_ext = ".ani"
 
     filter_glob: StringProperty(
-        default="*.ani",
+        default="*.ani;*.json",
         options={'HIDDEN'},
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )
@@ -134,7 +152,10 @@ class LosaAnim(Operator, ImportHelper):
         folder = path.parent
         for file in self.files:
             filepath = str(folder.joinpath(file.name))
-            import_animation(context, filepath)
+            if filepath.endswith('.ani'):
+                import_animation(context, filepath)
+            elif filepath.endswith('.json'):
+                import_entry(context, filepath)
 
         return {'FINISHED'}
 

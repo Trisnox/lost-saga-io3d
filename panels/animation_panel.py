@@ -6,7 +6,7 @@ class ANIMATION_UL_entries(bpy.types.UIList):
         fps = scene.render.fps if scene.io3d_anim_props.use_current_fps else scene.io3d_anim_props.override_fps
         if item:
             row = layout.row(align=True)
-            row.prop(item, "name", text="", icon='ARMATURE_DATA', emboss=False, expand=True)
+            row.prop(item, "name", text="", icon='ARMATURE_DATA' if not item.is_retarget else 'DRIVER', emboss=False, expand=True)
             row = row.row()
             row.alignment = 'RIGHT'
             row.label(text = str(int(round((item.total_time * fps) / 1000)) + 1))
@@ -43,6 +43,8 @@ class ANIMATION_PANEL(bpy.types.Panel):
         row = layout.row()
         row.label(text='Animation:', icon='POSE_HLT')
         col = layout.column()
+        col.operator('io3d.anim_retarget', text='Retarget Animation', icon='DRIVER')
+        col = layout.column()
         col.operator('io3d.anim_export', text='Export Animation', icon='ANIM')
 
         col = layout.column()
@@ -70,7 +72,10 @@ class ANIMATION_PANEL(bpy.types.Panel):
         row = layout.row(align=True)
         row.operator('io3d.animation_import', text='Import Animation', icon='ANIM')
         row.operator('io3d.remove_entry', text='Delete', icon='REMOVE')
+        row.operator('io3d.entry_export', text='Export', icon='FILE_LARGE')
         
+        row = layout.row()
+        row.prop(anim_props, 'apply_rest_rotation')
         row = layout.row()
         row.prop(anim_props, 'use_current_fps')
         row = row.row()

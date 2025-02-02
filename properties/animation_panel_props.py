@@ -58,6 +58,12 @@ class ANIMATION_PANEL_PROPERTIES(PropertyGroup):
         default=100,
     )
 
+    apply_rest_rotation: BoolProperty(
+        name='Apply Rest Rotation',
+        description='When enabled, rest rotation will be applied to animation that sourced from retarget',
+        default=True,
+    )
+
     mirror_target: EnumProperty(
         name='Mirror Target',
         description='Choose target to mirror to/from',

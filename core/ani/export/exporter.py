@@ -1,4 +1,5 @@
 import bpy
+import json
 import mathutils
 import struct
 
@@ -145,6 +146,7 @@ def export_anim(context: bpy.types.Context, filepath: str, anim_ver: str, frame_
         # This interpolation check is to fix keyframes that only have keyframe for either loc/rot
         # By looking from the files, it appears that location and rotation always come in pairs
         # So in order to fix it, the script will seek to certain keyframe to check the loc/rot based off the interpolation
+        # Oh, also, because of this, I had no idea how to improve it with fcurves.foreach_get()
         if interpolation_check:
             for frame, ref in interpolation_check.items():
                 if frame_range == 'PARTIAL':
@@ -232,6 +234,32 @@ def export_anim(context: bpy.types.Context, filepath: str, anim_ver: str, frame_
     
     return {'FINISHED'}
 
+def export_entry(context: bpy.types.Context, filepath: str):
+    anim_data_props = context.scene.io3d_animation_data
+    try:
+        anim_data = anim_data_props.entry[anim_data_props.active_entry_index]
+    except IndexError:
+        def draw(self, context):
+            self.layout.label(text='No entry to export')
+
+        context.window_manager.popup_menu(draw, title='INFO', icon='INFO')
+        return {'FINISHED'}
+    
+    tmp_dict = {}
+    for bone_name, data in anim_data:
+        tmp_dict[bone_name] = []
+        for frame, location, rotation in data:
+            location = (location.x, location.y, location.z)
+            rotation = (rotation.w, rotation.x, rotation.y, rotation.z)
+            tmp_dict[bone_name].append((frame, location, rotation))
+
+    animation = {anim_data.name: tmp_dict, 'frames': anim_data.frames,
+                 'total_time': anim_data.total_time, 'is_retarget': anim_data.is_retarget}
+    
+    with open(filepath, 'w+') as f:
+        json.dump(animation, f)
+
+    return {'FINISHED'}
 
 from bpy.types import Operator
 from bpy.props import StringProperty, IntProperty, EnumProperty
@@ -311,6 +339,21 @@ class AnimExport(Operator, ExportHelper):
         self.frame_end = context.scene.frame_end
         return super().invoke(context, event)
 
+class EntryExport(Operator, ExportHelper):
+    """Export Animation Entry"""
+    bl_idname = "io3d.entry_export"
+    bl_label = "Export Animation Entry (.json)"
+
+    filename_ext = ".json"
+
+    filter_glob: StringProperty(
+        default="*.json",
+        options={'HIDDEN'},
+        maxlen=255,  # Max internal buffer length, longer would be clamped.
+    )
+
+    def execute(self, context):
+        return export_entry(context, self.filepath)
 
 def menu_func_export(self, context):
     self.layout.operator(AnimExport.bl_idname, text="Lost Saga Anim (.ani)", icon='ANIM')
@@ -318,9 +361,11 @@ def menu_func_export(self, context):
 
 def register():
     bpy.utils.register_class(AnimExport)
+    bpy.utils.register_class(EntryExport)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
 
 def unregister():
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
+    bpy.utils.unregister_class(EntryExport)
     bpy.utils.unregister_class(AnimExport)

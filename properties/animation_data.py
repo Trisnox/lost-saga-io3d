@@ -2,7 +2,7 @@ import bpy
 import itertools
 import mathutils
 
-from bpy.props import IntProperty, FloatVectorProperty, StringProperty, CollectionProperty, PointerProperty
+from bpy.props import BoolProperty, IntProperty, FloatVectorProperty, StringProperty, CollectionProperty, PointerProperty
 from bpy.types import PropertyGroup
 
 class FrameData(PropertyGroup):
@@ -42,6 +42,7 @@ class AnimData(PropertyGroup):
     name: StringProperty()
     frames: IntProperty()
     total_time: IntProperty()
+    is_retarget: BoolProperty()
 
     def __iter__(self):
         return ((item.bone_name, item) for item in self.data)
@@ -82,11 +83,12 @@ class AnimationProperty(PropertyGroup):
         while len(self.entry) > 0:
             self.entry.remove(0)
 
-        name, data, _, frames, _, time = list(itertools.chain.from_iterable(anim_dict.items()))
+        name, data, _, frames, _, time, _, is_retarget = list(itertools.chain.from_iterable(anim_dict.items()))
         entry_data = self.entry.add()
         entry_data.set(name, data)
         entry_data.frames = frames
         entry_data.total_time = time
+        entry_data.is_retarget = is_retarget
 
     def get(self):
         return {entry_data.name: entry_data.get() for entry_data in self.entry}
@@ -94,7 +96,7 @@ class AnimationProperty(PropertyGroup):
     def append(self, anim_dict):
         anim_data = self.get()
 
-        name, data, _, frames, _, time = list(itertools.chain.from_iterable(anim_dict.items()))
+        name, data, _, frames, _, time, _, is_retarget = list(itertools.chain.from_iterable(anim_dict.items()))
         if name in anim_data:
             entry_data = next(nd for nd in self.entry if nd.name == name)
             for key_name, frame_data in data.items():
@@ -108,11 +110,13 @@ class AnimationProperty(PropertyGroup):
                     entry_data.set(key_name, frame_data)
                     entry_data.frames = frames
                     entry_data.total_time = time
+                    entry_data.is_retarget = is_retarget
         else:
             entry_data = self.entry.add()
             entry_data.set(name, data)
             entry_data.frames = frames
             entry_data.total_time = time
+            entry_data.is_retarget = is_retarget
 
     def append_entry(self, anim_name, bone_name, frame_data):
         entry_data = next((nd for nd in self.entry if nd.name == anim_name), None)
