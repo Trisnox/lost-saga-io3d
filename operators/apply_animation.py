@@ -88,7 +88,7 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
             if is_retarget and apply_rest:
                 rest_quaternion = mathutils.Quaternion(rest_rotation)
                 w, x, y, z = rotation
-                rotation = mathutils.Quaternion((w, -x, -y, z))
+                rotation = mathutils.Quaternion((w, x, y, z))
                 rotation = rest_quaternion @ rotation
                 new_data.append((frame, mathutils.Vector(rest_position), rotation))
             keyframes.append(frame)
