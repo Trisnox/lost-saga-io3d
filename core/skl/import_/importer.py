@@ -306,7 +306,8 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
         mesh_armature.name = 'mesh_armature'
         context.scene.collection.objects.unlink(mesh_armature)
         armature_collection.objects.link(mesh_armature)
-        mesh_armature['Rotation Correction'] = ((math.radians(-90), math.radians(180), 0), (-1, 1, 1))
+        # mesh_armature['Rotation Correction'] = ((math.radians(-90), math.radians(180), 0), (-1, 1, 1))
+        mesh_armature['Rotation Correction'] = ((0, 0, 0), (-1, 1, 1))
 
         if not empty_hide:
             origin, _, _ = bone_data['origin_correction']

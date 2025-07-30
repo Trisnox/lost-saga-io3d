@@ -10,12 +10,13 @@ class IO3D_UPDATER_PANEL(bpy.types.Panel):
 	bl_region_type = 'UI'
 	bl_context = "objectmode"
 	bl_category = "IO3D"
+	bl_options = {'DEFAULT_CLOSED'}
 
 	def draw(self, context):
 		update_settings_ui(self, context)
 
 def register():
-    bpy.utils.register_class(IO3D_UPDATER_PANEL)
+	bpy.utils.register_class(IO3D_UPDATER_PANEL)
 
 def unregister():
-    bpy.utils.unregister_class(IO3D_UPDATER_PANEL)
+	bpy.utils.unregister_class(IO3D_UPDATER_PANEL)
