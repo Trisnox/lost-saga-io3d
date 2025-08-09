@@ -1,3 +1,5 @@
+import enum
+
 SKIN_COLOR_DICT = {  # Light, Skin Shadow, Shadow
     'VANILLA': ((1.0, 0.982, 0.591, 1.0), (0.557, 0.005, 0.002, 1.0), (0.557, 0.211, 0.14, 1.0)),
     'PEACH': ((0.982, 0.680, 0.238, 1.0), (0.557, 0.005, 0.002, 1.0), (0.481, 0.27, 0.145, 1.0)),
@@ -33,6 +35,24 @@ TOON_SHADER_INDEX = {
     'rim light ior': 19
 }
 
+class VertexComponent:
+    def __init__(self):
+        self.IOFVF_POSITION = 1 << 0
+        self.IOFVF_POSITION2 = 1 << 1
+        self.IOFVF_POSITIONW = 1 << 2
+        self.IOFVF_WEIGHTS = 1 << 3
+        self.IOFVF_INDICES = 1 << 4
+        self.IOFVF_NORMAL = 1 << 5
+        self.IOFVF_COLOR0 = 1 << 6
+        self.IOFVF_COLOR1 = 1 << 7
+        self.IOFVF_UV0 = 1 << 8
+        self.IOFVF_UV1 = 1 << 9
+        self.IOFVF_UV2 = 1 << 10
+        self.IOFVF_UV3 = 1 << 11
+        self.IOFVF_TANGENT = 1 << 12
+        self.IOFVF_BINORMAL = 1 << 13
+        self.IOFVF_END = 1 << 14
+
 class MeshData:
     def __init__(self, *args):
         self.min_index = args[0]
@@ -50,6 +70,7 @@ class BlendWeight:
     def __init__(self, *args):
         self.weight = args[0]
         self.biped_id = args[1]
+        self.group = (self.weight, self.biped_id)
 
 class MeshType:
     def __init__(self, *args):

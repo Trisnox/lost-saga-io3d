@@ -81,7 +81,7 @@ def swap_constraints(context: bpy.types.Context):
         armature_object.select_set(True)
         context.view_layer.objects.active = armature_object
 
-    return {'FINISHED'}
+    return bool(empty_state)
 
 
 from bpy.types import Operator
@@ -98,7 +98,13 @@ class SwapConstraints(Operator):
         return object is not None and object.type in ('EMPTY', 'ARMATURE')
 
     def execute(self, context):
-        return swap_constraints(context)
+        result = swap_constraints(context)
+        if result:
+            self.report({'INFO'}, 'Current state: empties')
+        else:
+            self.report({'INFO'}, 'Current state: armature')
+        
+        return {'FINISHED'}
 
 
 def register():

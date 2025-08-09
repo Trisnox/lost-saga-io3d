@@ -157,6 +157,11 @@ class LosaAnim(Operator, ImportHelper):
             elif filepath.endswith('.json'):
                 import_entry(context, filepath)
 
+        if len(self.files) > 1:
+            self.report({'INFO'}, f'Added {len(self.files)} animation entries')
+        else:
+            self.report({'INFO'}, f'Added {file.name} to animation entry')
+
         return {'FINISHED'}
 
 def menu_func_import(self, context):

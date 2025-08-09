@@ -7,12 +7,29 @@ class MSH_PANEL(bpy.types.Panel):
     bl_label = 'MSH'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout
         scene = context.scene
         msh_props = scene.io3d_msh_props
+
+        col = layout.column()
+        col.label(text='Mesh Utility:', icon='MESH_CUBE')
+        row = layout.row()
+        row.operator('io3d.collision_mesh_export', text='Export Collision', icon='CUBE')
+        row.operator('io3d.mesh_export', text='Export Mesh', icon='OUTLINER_OB_MESH')
+
+        row = layout.split(factor=0.5)
+        row.prop(msh_props, 'surpress_split', text='Surpress Split')
+        row = row.row()
+        row.operator('io3d.preview_split', text='Preview Split', icon='MESH_DATA')
+
+        col = layout.column()
+        col.operator('io3d.split_mesh', text='Split Mesh', icon='MOD_EXPLODE')
+        col.prop(msh_props, 'split_threshold', text='Maximum Faces')
+
+        col = layout.column()
+        col.operator('io3d.get_bounding', text='Get Bounding', icon='MOD_EXPLODE')
 
         col = layout.column()
         col.label(text='Material Utility:', icon='NODE_MATERIAL')

@@ -3,9 +3,10 @@ import bpy
 
 def remove_entry(context: bpy.types.Context):
     anim_data = context.scene.io3d_animation_data
+    anim_name = anim_data.entry[anim_data.active_entry_index].name
     anim_data.remove(anim_data.active_entry_index)
         
-    return {'FINISHED'}
+    return anim_name
 
 
 from bpy.types import Operator
@@ -17,7 +18,10 @@ class RemoveEntry(Operator):
     bl_label = "Remove animation entry"
 
     def execute(self, context):
-        return remove_entry(context)
+        result = remove_entry(context)
+        self.report({'INFO'}, f'Removed "{result}"')
+
+        return {'FINISHED'}
 
 def register():
     bpy.utils.register_class(RemoveEntry)

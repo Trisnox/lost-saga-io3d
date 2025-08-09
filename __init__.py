@@ -1,7 +1,7 @@
 bl_info = {
 	"name": "Lost Saga IO3D Mesh",
 	"author": "Trisnox",
-	"version": (1, 4, 0),
+	"version": (1, 5, 0),
 	"blender": (4, 1, 0),
 	"location": "View3D > Sidebar > IO3D",
 	"description": "Tools to import/export various Lost Saga formats",
@@ -20,11 +20,9 @@ from .core.ani.import_ import importer as ani_importer
 from .core.ani.export import exporter as ani_exporter
 from .core.msh.export import exporter as msh_exporter
 
-from .operators import import_nodes, generate_material, to_opaque, to_transparent, toggle_outline, toggle_shadeless, toggle_transparency_overlap, toggle_backface_culling, apply_animation, attach_armature, flip_pose, form_armature, frame_remapping, mirror_bone, remove_animation_entry, rename_bones, reset_rest_state, retarget_animation, scene_setup, swap_constraints
+from .operators import import_nodes, generate_material, to_opaque, to_transparent, toggle_outline, toggle_shadeless, toggle_transparency_overlap, toggle_backface_culling, split_mesh, get_bounding, apply_animation, attach_armature, flip_pose, form_armature, frame_remapping, mirror_bone, remove_animation_entry, rename_bones, reset_rest_state, retarget_animation, scene_setup, swap_constraints
 
-from .core.experimental import mesh_export
-
-from .panels import animation_panel, experimental_panel, skl_msh_panel, msh_panel, material_panel, updater_panel
+from .panels import animation_panel, skl_msh_panel, msh_panel, material_panel, updater_panel
 
 m_bl_info = bl_info
 
@@ -46,6 +44,8 @@ classes = [
 	toggle_transparency_overlap,
 	toggle_backface_culling,
 	toggle_outline,
+	split_mesh,
+	get_bounding,
 	apply_animation,
 	attach_armature,
 	flip_pose,
@@ -58,12 +58,10 @@ classes = [
 	retarget_animation,
 	scene_setup,
 	swap_constraints,
-	mesh_export,
 	skl_msh_panel,
 	msh_panel,
 	material_panel,
 	animation_panel,
-	experimental_panel,
 	updater_panel
 ]
 

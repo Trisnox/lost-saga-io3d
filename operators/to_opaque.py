@@ -11,7 +11,7 @@ def to_opaque(context: bpy.types.Context):
     toon_shader_node.inputs[TOON_SHADER_INDEX['invert opacity']].default_value = False
     toon_shader_node.inputs[TOON_SHADER_INDEX['is transparent']].default_value = False
 
-    return {'FINISHED'}
+    return
 
 
 class ToOpaque(Operator):
@@ -25,7 +25,10 @@ class ToOpaque(Operator):
         return object is not None and object.type == 'MESH'
 
     def execute(self, context):
-        return to_opaque(context)
+        to_opaque(context)
+        self.report({'INFO'}, 'Successfully set material into opaque')
+
+        return {'FINISHED'}
 
 
 def register():

@@ -16,14 +16,12 @@ class SKL_MSH_PANEL(bpy.types.Panel):
         row = col.row()
         row.operator('io3d.skeleton_import', text='Import Skeleton', icon='OUTLINER_OB_ARMATURE')
         row.operator('io3d.mesh_import', text='Import Mesh', icon='OUTLINER_OB_MESH')
-
-        # row = layout.split(factor=0.5)
-        # box = row.box()
-        # box.scale_y = 0.5
-        # box.label(text='', icon='BLANK1')
-        # row = row.row()
-        # row.operator('io3d.mesh_import', text='Export Mesh', icon='OUTLINER_OB_MESH')
         
+        row = layout.split(factor=0.5)
+        row.label(text='', icon='BLANK1')
+        row = row.row()
+        row.operator('io3d.collision_mesh_import', text='Import Collision', icon='CUBE')
+
         col = layout.column()
         col.label(text='Resource folder:', icon='FILE_FOLDER')
         col.prop(scene.io3d_resource_path, 'path')

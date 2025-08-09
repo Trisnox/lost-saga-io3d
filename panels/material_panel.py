@@ -71,27 +71,6 @@ class MATERIAL_PANEL(bpy.types.Panel):
                 pass
 
             try:
-                texture = material.node_tree.nodes['Image Texture']
-                if not texture.image:
-                    continue
-
-                texture_name = os.path.basename(texture.image.filepath)
-                col = box.column()
-                if texture_name:
-                    row = col.split(factor=0.25)
-                    row.alignment = 'LEFT'
-                    row.label(text='Texture:')
-                    row = row.box()
-                    row.scale_y = 0.65
-                    row.label(text=texture_name, icon='IMAGE_DATA')
-                else:
-                    col.label(text='(Image not saved)')
-                    col.prop(texture.image, 'name', text='Texture', icon='IMAGE_DATA')
-                continue
-            except KeyError:
-                pass
-
-            try:
                 texture = material.node_tree.nodes['Skin Texture']
                 if not texture.image:
                     continue
@@ -142,6 +121,48 @@ class MATERIAL_PANEL(bpy.types.Panel):
                 else:
                     col.label(text='(Image not saved)')
                     col.prop(lightmap_texture.image, 'name', text='Lightmap Texture', icon='IMAGE_DATA')
+                continue
+            except KeyError:
+                pass
+
+            try:
+                texture = material.node_tree.nodes['Diffuse Texture']
+                if not texture.image:
+                    continue
+
+                texture_name = os.path.basename(texture.image.filepath)
+                col = box.column()
+                if texture_name:
+                    row = col.split(factor=0.25)
+                    row.alignment = 'LEFT'
+                    row.label(text='Texture:')
+                    row = row.box()
+                    row.scale_y = 0.65
+                    row.label(text=texture_name, icon='IMAGE_DATA')
+                else:
+                    col.label(text='(Image not saved)')
+                    col.prop(texture.image, 'name', text='Texture', icon='IMAGE_DATA')
+                continue
+            except KeyError:
+                pass
+
+            try:
+                texture = material.node_tree.nodes['Image Texture']
+                if not texture.image:
+                    continue
+
+                texture_name = os.path.basename(texture.image.filepath)
+                col = box.column()
+                if texture_name:
+                    row = col.split(factor=0.25)
+                    row.alignment = 'LEFT'
+                    row.label(text='Texture:')
+                    row = row.box()
+                    row.scale_y = 0.65
+                    row.label(text=texture_name, icon='IMAGE_DATA')
+                else:
+                    col.label(text='(Image not saved)')
+                    col.prop(texture.image, 'name', text='Texture', icon='IMAGE_DATA')
                 continue
             except KeyError:
                 pass

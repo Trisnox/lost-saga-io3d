@@ -10,28 +10,15 @@ import struct
 from ..ogre3d_parser import Ogre3DMaterialParser
 
 from ...classes.seeker import Seeker
-from ...classes.mesh import MeshData, MeshType, BlendWeight, SKIN_COLOR_DICT, TOON_SHADER_INDEX
+from ...classes.mesh import VertexComponent, MeshData, MeshType, BlendWeight, SKIN_COLOR_DICT, TOON_SHADER_INDEX
 
 def is_mesh_file(bytes):
     return bytes == 4739917
 
-def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str = None, skin_color: str = None, generate_outline: bool = False, use_rim_light: bool = False, surpress_color: bool = False, separate_material: bool = False, dont_invert_normals: bool = False, merge_faces: bool = False):
-    IOFVF_POSITION	= 1<<0
-    IOFVF_POSITION2	= 1<<1
-    IOFVF_POSITIONW = 1<<2
-    IOFVF_WEIGHTS	= 1<<3
-    IOFVF_INDICES	= 1<<4
-    IOFVF_NORMAL	= 1<<5
-    IOFVF_COLOR0	= 1<<6
-    IOFVF_COLOR1	= 1<<7
-    IOFVF_UV0		= 1<<8
-    IOFVF_UV1		= 1<<9
-    IOFVF_UV2		= 1<<10
-    IOFVF_UV3		= 1<<11
-    IOFVF_TANGENT	= 1<<12
-    IOFVF_BINORMAL	= 1<<13
-    IOFVF_END       = 1<<14
-    
+def is_collision_file(bytes):
+    return bytes == 5459267
+
+def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str = None, skin_color: str = None, generate_outline: bool = False, use_rim_light: bool = False, surpress_color: bool = False, separate_material: bool = False, merge_faces: bool = False):    
     MESH_VERSION = 2000
     VERTEX_COLOR_MESH_VERSION = 2001
     MESH_CONTROL_POINT_VERSION = 2002
@@ -75,30 +62,31 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
     vertex_color = []
     texture_uv = []
     light_texture_uv = []
-    if vertex_mask & IOFVF_POSITION:
+    vcomp = VertexComponent()
+    if vertex_mask & vcomp.IOFVF_POSITION:
         position = [struct.unpack('<3f', msh[s.o:s.vpos]) for _ in range(vertices)]
         
-    if vertex_mask & IOFVF_NORMAL:
+    if vertex_mask & vcomp.IOFVF_NORMAL:
         normal = [struct.unpack('<3f', msh[s.o:s.vpos]) for _ in range(vertices)]
         
-    if vertex_mask & IOFVF_TANGENT:
+    if vertex_mask & vcomp.IOFVF_TANGENT:
         tangent_list = [struct.unpack('<3f', msh[s.o:s.vpos]) for _ in range(vertices)]
         
-    if vertex_mask & IOFVF_BINORMAL:
+    if vertex_mask & vcomp.IOFVF_BINORMAL:
         normal_list = [struct.unpack('<3f', msh[s.o:s.vpos]) for _ in range(vertices)]
         
-    if vertex_mask & IOFVF_COLOR0:
+    if vertex_mask & vcomp.IOFVF_COLOR0:
         vertex_color = [struct.unpack('<L', msh[s.o:s.L])[0] for _ in range(vertices)]
         
-    if vertex_mask & IOFVF_UV0:
+    if vertex_mask & vcomp.IOFVF_UV0:
         texture_uv = [struct.unpack('<2f', msh[s.o:s.v2]) for _ in range(vertices)]
         
-    if vertex_mask & IOFVF_UV1:
+    if vertex_mask & vcomp.IOFVF_UV1:
         light_texture_uv = [struct.unpack('<2f', msh[s.o:s.v2]) for _ in range(vertices)]
     
     biped_list = []
     weights = []
-    if vertex_mask & IOFVF_WEIGHTS:
+    if vertex_mask & vcomp.IOFVF_WEIGHTS:
         biped_index_count = struct.unpack('<I', msh[s.o:s.i])[0]
         for _ in range(biped_index_count):
             name_length = struct.unpack('<I', msh[s.o:s.i])[0]
@@ -125,9 +113,9 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
     
     # After recent discovery, it appears that none of losa mesh uses this,
     # despite it being exist on source code
-    # billboard_center = []
-    # if vertex_mask & IOFVF_POSITION2:
-    #     billboard_center = [struct.unpack('<3f', msh[s.o:s.vpos]) for _ in range(vertices)]
+    billboard_center = []
+    if vertex_mask & vcomp.IOFVF_POSITION2:
+        billboard_center = [struct.unpack('<3f', msh[s.o:s.vpos]) for _ in range(vertices)]
     
     # Faces was constructed using WORD, which is equivalent to unsigned short
     face_count = struct.unpack('<I', msh[s.o:s.i])[0]
@@ -238,11 +226,10 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
     mesh_object.rotation_euler.z = math.radians(180)
     mesh_object.scale.x = -1.0
     bpy.ops.object.transform_apply(location = False, rotation = True, scale = True)
-    if not dont_invert_normals:
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.mesh.flip_normals()
-        bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.flip_normals()
+    bpy.ops.object.mode_set(mode='OBJECT')
 
     meshes = []
     for index, submesh_data in reversed(list(enumerate(submesh[1:], 1))):
@@ -634,6 +621,7 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
                     texture = bpy.data.images.load(str(texture_path))
 
                 texture_node = material.node_tree.nodes.new('ShaderNodeTexImage')
+                texture_node.name = 'Diffuse Texture'
                 texture_node.image = texture
                 texture_node.location = (-300, 300)
                 links.new(texture_node.outputs['Color'], toon_shader_node.inputs[TOON_SHADER_INDEX['color/texture']])
@@ -653,6 +641,64 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
                     scroll_UV(scroll_anim, mapping_node, material)
                 if rotate_anim:
                     rotate_UV(rotate_anim, mapping_node, material)
+    return {'FINISHED'}
+
+def import_collision(context: bpy.types.Context, filepath: str):
+    mesh_name = pathlib.Path(filepath).stem + '_collision'
+
+    with open(filepath, 'rb') as f:
+        msh = f.read()
+
+    try:
+        bpy.ops.object.mode_set(mode='OBJECT')
+    except:
+        pass
+
+    s = Seeker()
+    signature = struct.unpack('<I', msh[:s.i])[0]
+    if not is_collision_file(signature):
+        raise RuntimeError('Not a collision mesh file')
+
+    version = struct.unpack('<I', msh[s.o:s.i])[0]
+    vertex_count = struct.unpack('<I', msh[s.o:s.i])[0]
+    vertices = [struct.unpack('<3f', msh[s.o:s.vpos]) for _ in range(vertex_count)]
+    face_count = struct.unpack('<I', msh[s.o:s.i])[0]
+    faces = [struct.unpack('<H', msh[s.o:s.H])[0] for _ in range(face_count*3)]
+
+    mesh_data = bpy.data.meshes.new(name=mesh_name)
+    bm = bmesh.new()
+
+    for pos in vertices:
+        bm.verts.new(pos)
+    bm.verts.ensure_lookup_table()
+
+    for i in range(0, len(faces), 3):
+        try:
+            face_verts = [bm.verts[faces[i]], bm.verts[faces[i+1]], bm.verts[faces[i+2]]]
+            bm.faces.new(face_verts)
+        except Exception as e:
+            print(f"Error creating face {i//3}: {e}")
+
+    bm.normal_update()
+    bm.to_mesh(mesh_data)
+    bm.free()
+
+    mesh_object = bpy.data.objects.new(mesh_name, mesh_data)
+    bpy.context.collection.objects.link(mesh_object)
+
+    bpy.ops.object.select_all(action='DESELECT')
+    mesh_object.select_set(state=True)
+    context.view_layer.objects.active = mesh_object
+
+    mesh_object.rotation_euler.x = math.radians(90)
+    mesh_object.rotation_euler.z = math.radians(180)
+    mesh_object.scale.x = -1.0
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.flip_normals()
+    bpy.ops.object.mode_set(mode='OBJECT')
+
     return {'FINISHED'}
 
 from bpy_extras.io_utils import ImportHelper
@@ -714,12 +760,6 @@ class LosaMesh(Operator, ImportHelper):
         default=False
     )
 
-    dont_invert_normals: BoolProperty(
-        name="Do Not Invert Normals",
-        description="If checked, imported mesh will not have their normals recalculated, and instead imported as is",
-        default=False
-    )
-    
     merge_faces: BoolProperty(
         name="Merge Faces",
         description="If checked, blender will attempt marge the mesh by distance, which will make outline more clean (may cause UV issues on some models)",
@@ -734,8 +774,6 @@ class LosaMesh(Operator, ImportHelper):
 
         col = layout.column()
         col.prop(self, "merge_faces")
-        col = layout.column()
-        col.prop(self, "dont_invert_normals")
         col = layout.column()
         col.enabled = (bool(context.scene.io3d_resource_path.path))
         col.prop(self, "generate_outline")
@@ -754,17 +792,54 @@ class LosaMesh(Operator, ImportHelper):
         folder = path.parent
         for file in self.files:
             filepath = str(folder.joinpath(file.name))
-            import_mesh(context, filepath, context.scene.io3d_resource_path.path, self.default_skin_color, self.generate_outline, self.use_rim_light, self.surpress_color, self.separate_material, self.dont_invert_normals, self.merge_faces)
+            import_mesh(context, filepath, context.scene.io3d_resource_path.path, self.default_skin_color, self.generate_outline, self.use_rim_light, self.surpress_color, self.separate_material, self.merge_faces)
+
+        if len(self.files) > 1:
+            self.report({'INFO'}, f'Successfully imported {len(self.files)} meshes')
+        else:
+            self.report({'INFO'}, f'Imported "{file.name}"')
+
+        return {'FINISHED'}
+
+class LosaCol(Operator, ImportHelper):
+    """Import Lost Saga Collision Mesh (.cms). Supports importing multiple files at once"""
+    bl_idname = "io3d.collision_mesh_import"
+    bl_label = "Import Lost Saga Collision Mesh (.cms)"
+
+    filename_ext = ".cms"
+
+    filter_glob: StringProperty(
+        default="*.cms",
+        options={'HIDDEN'},
+        maxlen=255,  # Max internal buffer length, longer would be clamped.
+    )
+
+    files: CollectionProperty(type=PropertyGroup)
+
+    def execute(self, context):
+        path = pathlib.Path(self.filepath)
+        folder = path.parent
+        for file in self.files:
+            filepath = str(folder.joinpath(file.name))
+            import_collision(context, filepath)
             
+        if len(self.files) > 1:
+            self.report({'INFO'}, f'Successfully imported {len(self.files)} collision meshes')
+        else:
+            self.report({'INFO'}, f'Imported "{file.name}"')
+
         return {'FINISHED'}
 
 def menu_func_import(self, context):
     self.layout.operator(LosaMesh.bl_idname, text="Lost Saga Mesh (.msh)", icon='OUTLINER_OB_MESH')
+    self.layout.operator(LosaCol.bl_idname, text="Lost Saga Collision Mesh (.cms)", icon='CUBE')
 
 def register():
     bpy.utils.register_class(LosaMesh)
+    bpy.utils.register_class(LosaCol)
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
 
 def unregister():
-    bpy.utils.unregister_class(LosaMesh)
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
+    bpy.utils.unregister_class(LosaMesh)
+    bpy.utils.unregister_class(LosaCol)

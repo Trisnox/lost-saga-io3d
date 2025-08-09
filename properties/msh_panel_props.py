@@ -1,5 +1,5 @@
 import bpy
-from bpy.props import BoolProperty, PointerProperty
+from bpy.props import BoolProperty, PointerProperty, IntProperty
 from bpy.types import PropertyGroup
 
 class MSH_PANEL_PROPERTIES(PropertyGroup):
@@ -23,6 +23,20 @@ class MSH_PANEL_PROPERTIES(PropertyGroup):
         name='Toggle Outline',
         description='Toggle outline, only works if outline was generated using modifier',
         default=True,
+    )
+
+    surpress_split: BoolProperty(
+        name="Don't split faces",
+        description='When enabled, mesh will not have their faces split. Assumes manual split as it may cause UV distortion.',
+        default=False,
+    )
+
+    split_threshold: IntProperty(
+        name='Face Threshold',
+        description='Maximum face each mesh will have.',
+        default=10000,
+        min=0,
+        max=100000,
     )
 
 def register():

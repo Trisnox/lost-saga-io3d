@@ -9,11 +9,12 @@ def toggle_shadeless(context: bpy.types.Context):
     toon_shader_node = material.node_tree.nodes['Toon Shader']
     if toon_shader_node.inputs[TOON_SHADER_INDEX['emission strength']].default_value >= 100:
         toon_shader_node.inputs[TOON_SHADER_INDEX['emission strength']].default_value = 0
+        return 'SHADED'
     else:
         toon_shader_node.inputs[TOON_SHADER_INDEX['emission color']].default_value = (1.0, 1.0, 1.0, 1.0)
         toon_shader_node.inputs[TOON_SHADER_INDEX['emission strength']].default_value = 100
         toon_shader_node.inputs[TOON_SHADER_INDEX['preserve color']].default_value = True
-    return {'FINISHED'}
+        return 'SHADELESS'
 
 
 class ToggleShadeless(Operator):
@@ -27,7 +28,13 @@ class ToggleShadeless(Operator):
         return object is not None and object.type == 'MESH'
 
     def execute(self, context):
-        return toggle_shadeless(context)
+        result = toggle_shadeless(context)
+        if result == 'SHADELESS':
+            self.report({'INFO'}, 'Material is now shadeless')
+        else:
+            self.report({'INFO'}, 'Material is now shaded')
+        
+        return {'FINISHED'}
 
 
 def register():

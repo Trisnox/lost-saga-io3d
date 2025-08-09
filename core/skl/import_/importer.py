@@ -26,7 +26,8 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
         bpy.ops.object.mode_set(mode='OBJECT')
     except:
         pass
-
+    
+    filename = pathlib.Path(filepath).name
     basename = pathlib.Path(filepath).stem
 
     if mode == 'LEGACY':
@@ -339,7 +340,7 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
         retarget_armature.scale = mathutils.Vector((0.5, 0.5, 0.5))
         retarget_armature.hide_viewport = armature_hide
         empties_collection.hide_viewport = empty_hide
-        mesh_armature.hide_viewport = True
+        mesh_armature.hide_set(True)
     else:
         # Alternative solution: set everything but the origin correction as rest
         bone_rotation = {
@@ -371,6 +372,7 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
             shape.name = 'armature_base_shape'
             shape.hide_render = True
             shape.hide_viewport = True
+            shape.hide_set(True)
 
             for collection in shape.users_collection:
                 collection.objects.unlink(shape)
@@ -456,7 +458,7 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
         retarget_armature.scale = (0.5, 0.5, 0.5)
         bpy.ops.object.transform_apply(scale=True)
 
-    return {'FINISHED'}
+    return filename
 
 from bpy_extras.io_utils import ImportHelper
 from bpy.props import StringProperty, EnumProperty
@@ -507,7 +509,10 @@ class LosaSkeleton(Operator, ImportHelper):
         col.prop(self, "armature_mode")
 
     def execute(self, context):
-        return import_skeleton(context, self.filepath, self.mode, self.armature_mode)
+        result = import_skeleton(context, self.filepath, self.mode, self.armature_mode)
+        self.report({'INFO'}, f'Successfully imported "{result}"')
+
+        return {'FINISHED'}
 
 def menu_func_import(self, context):
     self.layout.operator(LosaSkeleton.bl_idname, text="Lost Saga Skeleton (.skl)", icon='OUTLINER_OB_ARMATURE')
