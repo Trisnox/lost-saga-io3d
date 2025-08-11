@@ -1,6 +1,9 @@
 import bpy
 
 
+def is_using_newer_version():
+    return bpy.app.version >= (4, 4, 0)
+
 def frame_remap_checks(context: bpy.types.Context):
     scene = context.scene
 
@@ -33,7 +36,12 @@ def frame_remap(context: bpy.types.Context, mode: str, target_fps: int, fps: int
             continue
 
         action = animation_data.action
-        for fcurve in action.fcurves:
+        if is_using_newer_version:
+            fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
+        else:
+            fcurves = action.fcurves
+
+        for fcurve in fcurves:
             if mode == 'STRETCH':
                 keyframe_iter = reversed(list(fcurve.keyframe_points))
             else:

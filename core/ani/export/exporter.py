@@ -6,6 +6,9 @@ import struct
 from ..compressor import comp_small_three, comp_8_bytes
 
 
+def is_using_newer_version():
+    return bpy.app.version >= (4, 4, 0)
+
 def export_anim(context: bpy.types.Context, filepath: str, anim_ver: str, frame_range: str, frame_start: int, frame_end: int):
     scene = context.scene
     active_object = context.active_object
@@ -76,7 +79,12 @@ def export_anim(context: bpy.types.Context, filepath: str, anim_ver: str, frame_
         bone_fcurves_location = []
         bone_fcurves_rotation = []
 
-        for fcurve in action.fcurves:
+        if is_using_newer_version:
+            fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
+        else:
+            fcurves = action.fcurves
+
+        for fcurve in fcurves:
             if fcurve.data_path == data_path_location:
                 bone_fcurves_location.append(fcurve)
             elif fcurve.data_path == data_path_rotation:

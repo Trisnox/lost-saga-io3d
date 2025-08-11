@@ -12,6 +12,10 @@ from ..ogre3d_parser import Ogre3DMaterialParser
 from ...classes.seeker import Seeker
 from ...classes.mesh import VertexComponent, MeshData, MeshType, BlendWeight, SKIN_COLOR_DICT, TOON_SHADER_INDEX
 
+
+def is_using_newer_version():
+    return bpy.app.version >= (4, 4, 0)
+
 def is_mesh_file(bytes):
     return bytes == 4739917
 
@@ -332,7 +336,12 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
                 context.scene.frame_set(current_frame)
 
                 action = material.node_tree.animation_data.action
-                for fcurve in action.fcurves:
+                if is_using_newer_version:
+                    fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
+                else:
+                    fcurves = action.fcurves
+
+                for fcurve in fcurves:
                     if fcurve.data_path == 'nodes["Mapping"].inputs[1].default_value':
                         modifier = fcurve.modifiers.new(type='CYCLES')
                         fcurve.extrapolation = 'LINEAR'
@@ -350,7 +359,12 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
             context.scene.frame_set(current_frame)
 
             action = material.node_tree.animation_data.action
-            for fcurve in action.fcurves:
+            if is_using_newer_version:
+                fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
+            else:
+                fcurves = action.fcurves
+
+            for fcurve in fcurves:
                 if fcurve.data_path == 'nodes["Mapping"].inputs[2].default_value':
                     modifier = fcurve.modifiers.new(type='CYCLES')
                     fcurve.extrapolation = 'LINEAR'

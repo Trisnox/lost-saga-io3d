@@ -2,6 +2,8 @@ import bpy
 import mathutils
 import numpy as np
 
+def is_using_newer_version():
+    return bpy.app.version >= (4, 4, 0)
 
 def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, frame_range: str, frame_start: int, frame_end: int, apply_rest: bool):
     if context.active_object.type == 'ARMATURE':
@@ -48,8 +50,18 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
 
         if not armature_object.animation_data:
             armature_object.animation_data_create()
+        
+        if is_using_newer_version():
+            slot = action.slots.new(id_type='ARMATURE', name=bone.name)
+            if not action.layers:
+                layer = action.layers.new('Layer')
+                strip = layer.strips.new(type='KEYFRAME')
+                channelbag = strip.channelbag(slot, ensure=True)
 
-        armature_object.animation_data.action = action
+            armature_object.animation_data.action = action
+            armature_object.animation_data.action_slot = action.slots[0]
+        else:
+            armature_object.animation_data.action = action
 
     anim_data = context.scene.io3d_animation_data
     keyframe_data = anim_data.entry[anim_data.active_entry_index]
@@ -111,23 +123,46 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
             if not bone.animation_data:
                 bone.animation_data_create()
 
-            bone.animation_data.action = action
+            if is_using_newer_version():
+                slot = action.slots.new(id_type='OBJECT', name=bone.name)
+                if not action.layers:
+                    layer = action.layers.new('Layer')
+                    strip = layer.strips.new(type='KEYFRAME')
+                    channelbag = strip.channelbag(slot, ensure=True)
+                
+                bone.animation_data.action = action
+                bone.animation_data.action_slot = action.slots[0]
+            else:
+                bone.animation_data.action = action
 
         data_path_location = 'location' if mode == 'EMPTY' else f'pose.bones["{bone.name}"].location'
         data_path_rotation = 'rotation_quaternion' if mode == 'EMPTY' else f'pose.bones["{bone.name}"].rotation_quaternion'
 
         bone_fcurves_location = []
         bone_fcurves_rotation = []
+        
+        if is_using_newer_version:
+            fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
+        else:
+            fcurves = action.fcurves
 
-        for fcurve in action.fcurves:
+        for fcurve in fcurves:
             if fcurve.data_path == data_path_location:
                 bone_fcurves_location.append(fcurve)
             elif fcurve.data_path == data_path_rotation:
                 bone_fcurves_rotation.append(fcurve)
+
         if not bone_fcurves_location:
-            bone_fcurves_location = [action.fcurves.new(data_path=data_path_location, index=i, action_group=bone.name) for i in range(3)]
+            if is_using_newer_version:
+                bone_fcurves_location = [fcurves.new(data_path=data_path_location, index=i) for i in range(3)]
+            else:
+                bone_fcurves_location = [fcurves.new(data_path=data_path_location, index=i, action_group=bone.name) for i in range(3)]
+
         if not bone_fcurves_rotation:
-            bone_fcurves_rotation = [action.fcurves.new(data_path=data_path_rotation, index=i, action_group=bone.name) for i in range(4)]
+            if is_using_newer_version:
+                bone_fcurves_rotation = [fcurves.new(data_path=data_path_rotation, index=i) for i in range(4)]
+            else:
+                bone_fcurves_rotation = [fcurves.new(data_path=data_path_rotation, index=i, action_group=bone.name) for i in range(4)]
 
         keyframe_count = len(keyframes)
         for index, fcurve in enumerate(bone_fcurves_location):

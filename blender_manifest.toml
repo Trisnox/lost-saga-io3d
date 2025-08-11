@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "lost_saga_io3d"
-version = "1.5.0"
+version = "1.5.1"
 name = "Lost Saga io3D Importer/Exporter"
 tagline = "Import/export various Lost Saga 3D formats" 
 maintainer = "Trisnox"

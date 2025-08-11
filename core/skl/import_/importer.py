@@ -121,6 +121,7 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
         elif mode in ('ADVANCED', 'LITE', 'RETARGET'):
             empty = bpy.data.objects.new(biped_bone_name, None)
             empty.empty_display_type = 'PLAIN_AXES'
+            empty.show_in_front = True
             empties_collection.objects.link(empty)
             
             empty['Position Rest X'] = LocalTMvPos.x
@@ -134,6 +135,7 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
             if biped_bone_name == 'Bip01':
                 origin_empty = bpy.data.objects.new('origin_correction', None)
                 origin_empty.empty_display_type = 'PLAIN_AXES'
+                origin_empty.show_in_front = True
                 empties_collection.objects.link(origin_empty)
                 
                 rot_x = mathutils.Quaternion((1, 0, 0), math.radians(-90))

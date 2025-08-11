@@ -3,6 +3,9 @@ import math
 import mathutils
 
 
+def is_using_newer_version():
+    return bpy.app.version >= (4, 4, 0)
+
 def retarget_animation(context: bpy.types.Context):
     armature_object = context.active_object
     try:
@@ -43,8 +46,12 @@ def retarget_animation(context: bpy.types.Context):
         data_path_rotation = f'pose.bones["{bone_name}"].rotation_quaternion'
 
         bone_fcurves_rotation = []
+        if is_using_newer_version:
+            fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
+        else:
+            fcurves = action.fcurves
 
-        for fcurve in action.fcurves:
+        for fcurve in fcurves:
             if fcurve.data_path == data_path_rotation:
                 bone_fcurves_rotation.append(fcurve)
 
