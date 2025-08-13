@@ -79,8 +79,19 @@ def mirror_pose(context: bpy.types.Context):
         bone_iter = zip(bone_names, mirrored_bone_names)
 
     for bone_target_name, bone_source_name in bone_iter:
-        bone_target = bones.get(bone_target_name)
-        bone_source = bones.get(bone_source_name)
+        if active_object.type == 'ARMATURE':
+            bone_target = bones.get(bone_target_name)
+            bone_source = bones.get(bone_source_name)
+        else:
+            for bone in bones:
+                if bone_target_name == bone.name:
+                    bone_target = bone
+                    break
+            
+            for bone in bones:
+                if bone_source_name == bone.name:
+                    bone_source = bone
+                    break
 
         if anim_props.location:
             bone_target.location = bone_source.location

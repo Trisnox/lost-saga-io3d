@@ -1,7 +1,7 @@
 bl_info = {
 	"name": "Lost Saga IO3D Mesh",
 	"author": "Trisnox",
-	"version": (1, 5, 1),
+	"version": (1, 5, 2),
 	"blender": (4, 1, 0),
 	"location": "View3D > Sidebar > IO3D",
 	"description": "Tools to import/export various Lost Saga formats",

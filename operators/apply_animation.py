@@ -52,7 +52,11 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
             armature_object.animation_data_create()
         
         if is_using_newer_version():
-            slot = action.slots.new(id_type='ARMATURE', name=bone.name)
+            if not action.slots:
+                slot = action.slots.new(id_type='OBJECT', name=armature_object.name)
+            else:
+                slot = action.slots[0]
+
             if not action.layers:
                 layer = action.layers.new('Layer')
                 strip = layer.strips.new(type='KEYFRAME')
@@ -124,7 +128,11 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
                 bone.animation_data_create()
 
             if is_using_newer_version():
-                slot = action.slots.new(id_type='OBJECT', name=bone.name)
+                if not action.slots:
+                    slot = action.slots.new(id_type='OBJECT', name=bone.name)
+                else:
+                    slot = action.slots[0]
+                    
                 if not action.layers:
                     layer = action.layers.new('Layer')
                     strip = layer.strips.new(type='KEYFRAME')
