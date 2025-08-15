@@ -1,0 +1,137 @@
+site_name: Lost Saga IO3D
+site_description: Blender add-on to import/export Lost Saga 3D formats
+site_url: https://trisnox.github.io/lost-saga-io3d/
+repo_url: https://github.com/Trisnox/lost-saga-io3d
+repo_name: Trisnox/lost-saga-io3d
+
+docs_dir: '../../docs/en'
+site_dir: '../../generated/en'
+
+theme:
+    name: material
+    custom_dir: '../../overrides'
+    icon: 
+      repo: fontawesome/brands/github
+    palette:
+        - media: "(prefers-color-scheme: dark)"
+          scheme: slate
+          primary: teal
+          accent: amber
+          toggle:
+            icon: material/weather-night
+            name: Dark Mode
+            
+        - media: "(prefers-color-scheme: light)"
+          scheme: default
+          primary: white
+          accent: teal
+          toggle:
+            icon: material/weather-sunny
+            name: Light Mode
+            
+    features:
+        - content.code.copy
+        - navigation.footer
+        - navigation.tabs
+        - navigation.tabs.sticky
+        - navigation.sections
+        - search.suggest
+        - search.highlight
+        - search.share
+nav:
+  - en/index.md
+  - en/install.md
+  - Tutorial/Guides:
+    - en/Tutorials/index.md
+    - Importing Mesh: en/Tutorials/importing_mesh.md
+    - Importing Animation: en/Tutorials/importing_animation.md
+    - Exporting Mesh: en/Tutorials/exporting_mesh.md
+    - Exporting Animation: en/Tutorials/exporting_animation.md
+  - SKL MSH Panel:
+    - en/SKL MSH Panel/index.md
+    - Skeleton Import: en/SKL MSH Panel/skeleton_import.md
+    - Mesh Import: en/SKL MSH Panel/mesh_import.md
+    - Resource Folder: en/SKL MSH Panel/resource_folder.md
+    - Attach Armature: en/SKL MSH Panel/attach_armature.md 
+    - Rename Bones: en/SKL MSH Panel/rename_bones.md
+    - Setup Scene: en/SKL MSH Panel/setup_scene.md
+  - MSH Panel:
+    - en/MSH Panel/index.md
+    - Export Collision: en/MSH Panel/export_collision.md
+    - Export Mesh: en/MSH Panel/export_mesh.md
+    - Preview Split: en/MSH Panel/preview_split.md
+    - Split Mesh: en/MSH Panel/split_mesh.md
+    - Get Bounding: en/MSH Panel/get_bounding.md
+    - Import Losa Shader: en/MSH Panel/import_nodes.md
+    - Generate Material: en/MSH Panel/generate_material.md
+    - Shader Operator: en/MSH Panel/shader_operator.md
+    - Toggle Backface Culling: en/MSH Panel/toggle_backface.md
+    - Toggle Outline: en/MSH Panel/toggle_outline.md
+    - Material Info Panel: en/MSH Panel/export_material.md
+  - ANI Panel:
+    - en/ANI Panel/index.md
+    - Flip Pose: en/ANI Panel/flip_pose.md
+    - Mirror Pose: en/ANI Panel/mirror_pose.md
+    - Reset Rest State: en/ANI Panel/reset_rest_state.md
+    - Swap Armature Display: en/ANI Panel/swap_armature_display.md
+    - Remap Frames: en/ANI Panel/remap_frames.md
+    - Retarget Animation: en/ANI Panel/retarget_animation.md
+    - Export Animation: en/ANI Panel/export_animation.md
+    - Animation Entry: en/ANI Panel/animation_entry.md
+  - Binary Structure: binary_structure.md
+  - Sample Files: sample_files.md
+  - Events Editor: events_editor.md
+
+extra:
+  alternate:
+    - name: English
+      link: /en/
+      lang: en
+    # - name: Indonesia
+    #   link: /id/
+    #   lang: id
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Trisnox/lost-saga-io3d
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/dJUMU9Gkw2
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - admonition
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search:
+        lang:
+            - en
+            # - id
+  - glightbox
+  - mkdocs-video:
+      video_autoplay: False
+  - open-in-new-tab
+  - section-index
+
+  - i18n:
+      docs_structure: folder
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        # - locale: id
+        #   name: Indonesia
+        #   build: true
