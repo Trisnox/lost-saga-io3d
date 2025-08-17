@@ -561,7 +561,7 @@ def export_mesh(context: bpy.types.Context, filepath: str, surpress_split: bool,
                 for group in vertex.groups:
                     if not group.group < len(biped_list):
                         continue
-                    if group.weight > 0.0:
+                    if not group.weight > 0.0:
                         continue
 
                     blend_group.append((group.weight, float(group.group)))

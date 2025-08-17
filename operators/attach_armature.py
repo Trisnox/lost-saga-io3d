@@ -27,7 +27,7 @@ def attach_armature(context: bpy.types.Context):
         modifier = mesh.modifiers.new(name='Armature', type='ARMATURE')
         modifier.object = armature
         
-    return {'FINISHED'}
+    return
 
 
 from bpy.types import Operator
@@ -44,7 +44,10 @@ class ArmatureAttach(Operator):
         return object is not None and object.type in ('MESH', 'ARMATURE')
 
     def execute(self, context):
-        return attach_armature(context)
+        result = attach_armature(context)
+        self.report({'INFO'}, 'Successfully attached armature')
+        
+        return {'FINISHED'}
 
 def register():
     bpy.utils.register_class(ArmatureAttach)

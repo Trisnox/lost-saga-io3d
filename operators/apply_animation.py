@@ -73,6 +73,12 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
     frames = int(keyframe_data.total_time/fps*1000) # ver8 fix
     is_retarget = keyframe_data.is_retarget
     for biped_name, data in keyframe_data:
+        # if is_retarget:
+        # if biped_name.startswith('Bip01 L'):
+        #     biped_name = biped_name.replace('Bip01 L', 'Bip01 R')
+        # elif biped_name.startswith('Bip01 R'):
+        #     biped_name = biped_name.replace('Bip01 R', 'Bip01 L')
+
         if biped_name in not_found:
             continue
 
@@ -101,12 +107,15 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
             if frame_range == 'PARTIAL':
                 if not frame_start <= frame - frame_offset <= frame_end:
                     continue
+
             if is_retarget and apply_rest:
                 rest_quaternion = mathutils.Quaternion(rest_rotation)
+                x, y, z = location
                 w, x, y, z = rotation
                 rotation = mathutils.Quaternion((w, x, y, z))
                 rotation = rest_quaternion @ rotation
                 new_data.append((frame, mathutils.Vector(rest_position), rotation))
+
             keyframes.append(frame)
         data = new_data if new_data else data
 

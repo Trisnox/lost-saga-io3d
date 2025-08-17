@@ -43,12 +43,12 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
         bpy.ops.object.mode_set(mode='EDIT')
 
         bones = {}
-    elif mode == 'ADVANCED':
+    elif mode == 'ADVANCED' or mode == 'RETARGET':
         armature_collection = bpy.data.collections.new(basename + '_armature')
         context.scene.collection.children.link(armature_collection)
         empties_collection = bpy.data.collections.new('empties')
         armature_collection.children.link(empties_collection)
-    elif mode == 'LITE' or mode == 'RETARGET':
+    elif mode == 'LITE':
         empties_collection = bpy.data.collections.new('empties')
         context.scene.collection.children.link(empties_collection)
     
@@ -205,7 +205,7 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
             bone['Matrix Quaternion Y'] = quaternion.y
             bone['Matrix Quaternion Z'] = quaternion.z
         bpy.ops.object.mode_set(mode='OBJECT')
-    elif mode == 'ADVANCED':
+    elif mode == 'ADVANCED' or mode == 'RETARGET':
         armature_hide = True if armature_mode == 'EMPTY' else False
         empty_hide = not armature_hide
 
@@ -235,15 +235,26 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
         root.select_set(True)
         context.view_layer.objects.active = root
 
-        retarget_armature = ArmatureForm.generate_with_return(context)
-        for collection in retarget_armature.users_collection:
-            collection.objects.unlink(retarget_armature)
-        armature_collection.objects.link(retarget_armature)
-        armature_collection.objects.link(shape)
+        if not mode == 'RETARGET':
+            retarget_armature = ArmatureForm.generate_with_return(context)
+            for collection in retarget_armature.users_collection:
+                collection.objects.unlink(retarget_armature)
+            armature_collection.objects.link(retarget_armature)
+            armature_collection.objects.link(shape)
 
         for bone, position, rotation in bone_data.values():
             bone.rotation_mode = 'QUATERNION'
             bone.rotation_quaternion = rotation
+
+        if mode == 'RETARGET':
+            origin, _, _ = bone_data['origin_correction']
+            origin.scale.x = -1
+
+            retarget_armature = ArmatureForm.generate_with_return(context, is_delta=True)
+            for collection in retarget_armature.users_collection:
+                collection.objects.unlink(retarget_armature)
+            armature_collection.objects.link(retarget_armature)
+            armature_collection.objects.link(shape)
 
         retarget_armature.select_set(True)
         context.view_layer.objects.active = retarget_armature
@@ -258,34 +269,49 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
             empty, position, rotation = bone_data[pose_bone.name]
 
             shape_length = bone_length.get(pose_bone.name, (1.0, 1.0, 1.0))
+            if mode == 'RETARGET':
+                shape_length = -(shape_length[0] * 0.5), shape_length[1], shape_length[2]
             pose_bone.custom_shape = shape
             pose_bone.custom_shape_scale_xyz = shape_length
 
             # Blender keeps nagging about depedency cycles despite being muted
             # Solution is to store the object data inside property, and then remove/add the constraints when swapped
-            if armature_hide:
-                pose_bone.location = mathutils.Vector()
-                pose_bone.rotation_quaternion = mathutils.Quaternion()
+            if mode == 'RETARGET':
+                consts = empty.constraints.new('COPY_LOCATION')
+                consts.name = 'Retarget'
+                consts.target = retarget_armature
+                consts.subtarget = pose_bone.name
+                
+                consts = empty.constraints.new('COPY_ROTATION')
+                consts.name = 'Retarget'
+                consts.target = retarget_armature
+                consts.subtarget = pose_bone.name
+                # consts.target_space = 'POSE'
+                # consts.owner_space = 'WORLD'
+            else:
+                if armature_hide:
+                    pose_bone.location = mathutils.Vector()
+                    pose_bone.rotation_quaternion = mathutils.Quaternion()
 
-                pose_const = pose_bone.constraints.new('COPY_TRANSFORMS')
-                pose_const.name = 'Retarget'
-                pose_const.target = empty
-                pose_const.target_space = 'LOCAL'
-                pose_const.owner_space = 'LOCAL'
+                    pose_const = pose_bone.constraints.new('COPY_TRANSFORMS')
+                    pose_const.name = 'Retarget'
+                    pose_const.target = empty
+                    pose_const.target_space = 'LOCAL'
+                    pose_const.owner_space = 'LOCAL'
 
-            if empty_hide:
-                empty.location = mathutils.Vector()
-                empty.rotation_quaternion = mathutils.Quaternion()
+                if empty_hide:
+                    empty.location = mathutils.Vector()
+                    empty.rotation_quaternion = mathutils.Quaternion()
 
-                empty_consts = empty.constraints.new('COPY_TRANSFORMS')
-                empty_consts.name = 'Retarget'
-                empty_consts.target = retarget_armature
-                empty_consts.subtarget = pose_bone.name
-                empty_consts.target_space = 'LOCAL'
-                empty_consts.owner_space = 'LOCAL'
+                    empty_consts = empty.constraints.new('COPY_TRANSFORMS')
+                    empty_consts.name = 'Retarget'
+                    empty_consts.target = retarget_armature
+                    empty_consts.subtarget = pose_bone.name
+                    empty_consts.target_space = 'LOCAL'
+                    empty_consts.owner_space = 'LOCAL'
 
-                pose_bone.location = position
-                pose_bone.rotation_quaternion = rotation
+                    pose_bone.location = position
+                    pose_bone.rotation_quaternion = rotation
 
             pose_bone['Position Rest X'] = empty['Position Rest X']
             pose_bone['Position Rest Y'] = empty['Position Rest Y']
@@ -301,6 +327,10 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
             empty['Bone Reference Subtarget'] = pose_bone.name
         
         bpy.ops.object.mode_set(mode='OBJECT')
+
+        if mode == 'RETARGET':
+            return filename
+
         bpy.ops.object.select_all(action='DESELECT')
         root = bone_data['Bip01'][0]
         root.select_set(True)
@@ -486,7 +516,7 @@ class LosaSkeleton(Operator, ImportHelper):
         items=(
             ("LITE", "Lite", "Same as advanced, but the pose is set as rest pose. Intended for weight painting"),
             ("ADVANCED", "Advanced", "Import skeleton by using y-axis bone rotation. Intended for animation (import/export)"),
-            ("RETARGET", "Retarget", "Same as advanced, but the pose is set as rest pose except the origin_correction. Can be used for retargeting animation"),
+            ("RETARGET", "Retarget", "Same as advanced, but the skeleton has delta transformation applied. Can be used to retargeting animation."),
             ("LEGACY", "Legacy", "Import skeleton by using the matrix value. Intended for weight painting. Not recommended for usage"),
         ),
         default="LITE",

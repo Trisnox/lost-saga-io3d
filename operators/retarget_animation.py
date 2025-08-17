@@ -105,7 +105,7 @@ from bpy.types import Operator
 
 
 class RetargetAnim(Operator):
-    """Retarget animation from lite skeleton. Animation will be stored inside panel"""
+    """Retarget animation from retarget skeleton. Animation will be stored inside panel"""
     bl_idname = "io3d.anim_retarget" 
     bl_label = "Retarget animation"
     

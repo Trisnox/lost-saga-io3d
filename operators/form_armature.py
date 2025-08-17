@@ -28,7 +28,7 @@ def vpos_to_matrix(vpos):
     rMatrix = mathutils.Matrix.Rotation(0, 3, vpos)
     return rMatrix @ bMatrix
 
-def form_armature(context: bpy.types.Context, is_static_call: bool = False, skip_check: bool = False):
+def form_armature(context: bpy.types.Context, is_static_call: bool = False, skip_check: bool = False, is_delta: bool = False):
     while True and not skip_check:
         res = bpy.ops.object.select_grouped(extend=True, type='PARENT')
         if res == {'CANCELLED'}:
@@ -39,6 +39,15 @@ def form_armature(context: bpy.types.Context, is_static_call: bool = False, skip
         raise RuntimeError('Object is not Lost Saga skeleton')
     
     empties = [root] + [_ for _ in root.children_recursive]
+
+    if is_delta:
+        bpy.ops.object.select_all(action='DESELECT')
+        context.view_layer.objects.active = root
+
+        for empty in empties:
+            empty.select_set(True)
+        
+        bpy.ops.object.transforms_to_deltas(mode='ALL')
 
     armature_data = bpy.data.armatures.new('retarget_armature')
     armature_object = bpy.data.objects.new('retarget_armature', armature_data)
@@ -104,9 +113,9 @@ class ArmatureForm(Operator):
         return form_armature(context)
     
     @staticmethod
-    def generate_with_return(context, skip_check: bool = False):
+    def generate_with_return(context, skip_check: bool = False, is_delta: bool = False):
         """Used for SKL importing, returns the object of generated armature"""
-        return form_armature(context, True, skip_check)
+        return form_armature(context, True, skip_check, is_delta)
 
 
 def register():
