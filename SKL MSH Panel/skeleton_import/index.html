@@ -657,6 +657,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Tutorials/retarget/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    [Not Working] Retarget Animation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1435,12 +1458,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ANI%20Panel/retarget_animation/" class="md-nav__link">
+      <a href="../../ANI%20Panel/export_animation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Retarget Animation
+    Export Animation
     
   </span>
   
@@ -1458,12 +1481,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ANI%20Panel/export_animation/" class="md-nav__link">
+      <a href="../../ANI%20Panel/apply_delta/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Export Animation
+    Apply Delta Transforms
     
   </span>
   
@@ -1681,7 +1704,7 @@
 <ul>
 <li>Lite: If you only need the skeleton to weight paint, or to do animation (not for import/export), you should choose this. This skeleton is formed in same way like advanced does, minus the mesh armature, and the transformation are applied</li>
 <li>Advanced: This mode allows for pretty much almost everything, mainly import/export animation</li>
-<li>Retarget: Currently broken, can be used, but result are nowhere near perfect. This bone is intended to be used for retarget, use this armature as the target, at which you can use <a href="../../ANI%20Panel/retarget_animation/">Retarget Animation operator</a>, this retargeted animation entry can be later exported, and then applied to advanced skeleton</li>
+<li>Retarget: This mode is intended to be used for retarget. Use the armature as the target, bake the empties, use <a href="../../ANI%20Panel/apply_delta/"><code>Apply Delta Transforms</code> operator</a>, and then use the <a href="../../ANI%20Panel/export_animation/"><code>Export Animation</code> operator</a> to export them.</li>
 <li>Legacy: Bones formed using LocalTMvPos/ObjectTMvPos. Use lite/advanced instead</li>
 </ul>
 <h2 id="display">Display</h2>
