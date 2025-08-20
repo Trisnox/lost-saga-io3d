@@ -47,6 +47,7 @@ nav:
     - Importing Animation: en/Tutorials/importing_animation.md
     - Exporting Mesh: en/Tutorials/exporting_mesh.md
     - Exporting Animation: en/Tutorials/exporting_animation.md
+    - "[Not Working] Retarget Animation": en/Tutorials/retarget.md
   - SKL MSH Panel:
     - en/SKL MSH Panel/index.md
     - Skeleton Import: en/SKL MSH Panel/skeleton_import.md
@@ -75,8 +76,8 @@ nav:
     - Reset Rest State: en/ANI Panel/reset_rest_state.md
     - Swap Armature Display: en/ANI Panel/swap_armature_display.md
     - Remap Frames: en/ANI Panel/remap_frames.md
-    - Retarget Animation: en/ANI Panel/retarget_animation.md
     - Export Animation: en/ANI Panel/export_animation.md
+    - Apply Delta Transforms: en/ANI Panel/apply_delta.md
     - Animation Entry: en/ANI Panel/animation_entry.md
   - Binary Structure: binary_structure.md
   - Sample Files: sample_files.md

@@ -23,7 +23,7 @@ From here you can choose various mode depending on what you need.
 
 - Lite: If you only need the skeleton to weight paint, or to do animation (not for import/export), you should choose this. This skeleton is formed in same way like advanced does, minus the mesh armature, and the transformation are applied
 - Advanced: This mode allows for pretty much almost everything, mainly import/export animation
-- Retarget: Currently broken, can be used, but result are nowhere near perfect. This bone is intended to be used for retarget, use this armature as the target, at which you can use [Retarget Animation operator](../ANI%20Panel/retarget_animation.md), this retargeted animation entry can be later exported, and then applied to advanced skeleton
+- Retarget: This mode is intended to be used for retarget. Use the armature as the target, bake the empties, use [`Apply Delta Transforms` operator](../ANI%20Panel/apply_delta.md), and then use the [`Export Animation` operator](../ANI%20Panel/export_animation.md) to export them.
 - Legacy: Bones formed using LocalTMvPos/ObjectTMvPos. Use lite/advanced instead
 
 ## Display

@@ -17,15 +17,14 @@ Do note that most of operator here only works for advanced skeleton.
 - Remap Frames: Remap keyframe timing, only work if user is using `Output > Frame Range > Time stretching`
 
 ## Animation
-- Retarget Animation: Export animation into entry. Only works for retarget skeleton
 - Export Animation: Export animation into `.ani`. Only works for advanced skeleton
+- Apply Delta Transformations: Used for retarget. Apply delta transformations to all selected object and its animation data
 
 ## Animation Entry
 - Entry: All imported animation will be listed in this entries
 - Import Animation: Import `.ani` file or `.json`
 - Delete: Delete animation entry
 - Export: Export animation entry into `.json` file
-- Apply Rest Rotation: Only for retarget, whether to apply rest rotation to retarget animation or not
 - Use Scene FPS: When enabled, imported animation timing will use current FPS to append keyframes, otherwise user can set their own FPS value
 - Frame Range: Number of keyframes to append, if set to all, then all keyframes will be applied, otherwise only partial amount will be appended
 - Frame Start/End: Used for frame range, if using partial. Limit keyframe only to these range only

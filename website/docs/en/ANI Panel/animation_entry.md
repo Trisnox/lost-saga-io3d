@@ -25,11 +25,6 @@ Operator to export entry into `.json`, intended for retarget. To export animatio
 ___
 
 ## Settings
-### Apply Rest Rotation
-Intended for [retarget animation](../ANI%20Panel/retarget_animation.md) only, does nothing for anything else.
-
-Whether to apply rest rotation when applying retarget animation or not.
-
 ### Use Scene FPS
 Whether to use project FPS, or user defined FPS to calculate keyframes for animation.
 

@@ -44,7 +44,15 @@ If you want to know how to properly import/export 3d file formats, this section 
 
     Guide on how to export animation
 
-    [:octicons-arrow-right-24: exporting Animation](./exporting_animation.md)
+    [:octicons-arrow-right-24: Exporting Animation](./exporting_animation.md)
+    
+-   :material-recycle:{ .lg .middle } __Retarget Animation__
+
+    ---
+
+    Guide on how to retarget animation
+
+    [:octicons-arrow-right-24: Retarget Animation](./retarget.md)
     
 </div>
 
