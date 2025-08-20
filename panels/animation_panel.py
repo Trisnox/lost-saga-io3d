@@ -74,8 +74,8 @@ class ANIMATION_PANEL(bpy.types.Panel):
         row.operator('io3d.remove_entry', text='Delete', icon='REMOVE')
         row.operator('io3d.entry_export', text='Export', icon='FILE_LARGE')
         
-        row = layout.row()
-        row.prop(anim_props, 'apply_rest_rotation')
+        # row = layout.row()
+        # row.prop(anim_props, 'apply_rest_rotation')
         row = layout.row()
         row.prop(anim_props, 'use_current_fps')
         row = row.row()

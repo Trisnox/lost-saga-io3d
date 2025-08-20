@@ -120,7 +120,7 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
             matrix_dict[biped_bone_name] = matrix_location, matrix_rotation_euler, matrix_rotation_quaternion
         elif mode in ('ADVANCED', 'LITE', 'RETARGET'):
             empty = bpy.data.objects.new(biped_bone_name, None)
-            empty.empty_display_type = 'PLAIN_AXES'
+            empty.empty_display_type = 'ARROWS'
             empty.show_in_front = True
             empties_collection.objects.link(empty)
             
@@ -133,8 +133,17 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
             empty['Quaternion Rest Z'] = LocalTMqRot.z
 
             if biped_bone_name == 'Bip01':
+                # origin_correction is just simply a solution to preserve coordinate difference for both importing and exporting
+                # Basically, you just import them as is, add this correction bone, parent the root to the correction bone, and then
+                # you can apply whatever transformation you want into this bone without affecting the Lost Saga skeleton bone rotation.
+                # In my case, it's rotated 90x, 180y, and scale -1 on x, which is literally y-up left handed into z-up right handed.
+                # Sure, you could've just apply the rotation manually into each bone, but you'll have to do that with other aspect
+                # such as: animation, exporting animation, and possibly many more. Applying manual rotation is not very efficient since
+                # you'll have to iterate through all bones, and the rotation for each keyframe if you want to import/export animation
+                # Why bother applying manual rotation when you could've just used all in one solution?
+
                 origin_empty = bpy.data.objects.new('origin_correction', None)
-                origin_empty.empty_display_type = 'PLAIN_AXES'
+                origin_empty.empty_display_type = 'ARROWS'
                 origin_empty.show_in_front = True
                 empties_collection.objects.link(origin_empty)
                 
@@ -276,18 +285,57 @@ def import_skeleton(context: bpy.types.Context, filepath: str, mode: str, armatu
 
             # Blender keeps nagging about depedency cycles despite being muted
             # Solution is to store the object data inside property, and then remove/add the constraints when swapped
-            if mode == 'RETARGET':
-                consts = empty.constraints.new('COPY_LOCATION')
-                consts.name = 'Retarget'
-                consts.target = retarget_armature
-                consts.subtarget = pose_bone.name
+            if mode == 'RETARGET' and not empty.name == 'origin_correction':
+                # if pose_bone.name.startswith('Bip01 L'):
+                #     target_bone = pose_bone.name.replace('Bip01 L', 'Bip01 R')
+                # elif pose_bone.name.startswith('Bip01 R'):
+                #     target_bone = pose_bone.name.replace('Bip01 R', 'Bip01 L')
+                # else:
+                #     target_bone = pose_bone.name
+
+                no_rotation = ['Bip01 L Toe0', 'Bip01 R Toe0', 'Bip01 left_eyeball', 'Bip01 left_eyebrow', 'Bip01 left_eyetop',
+                               'Bip01 right_eyeball', 'Bip01 right_eyebrow', 'Bip01 left_eyetop', 'Bip01 Mantle01', 'Bip01 Mantle02',
+                               'Bip01 Mantle03', 'Bip01 Mantle04', 'Bip01 Mantle05']
                 
-                consts = empty.constraints.new('COPY_ROTATION')
-                consts.name = 'Retarget'
-                consts.target = retarget_armature
-                consts.subtarget = pose_bone.name
-                # consts.target_space = 'POSE'
-                # consts.owner_space = 'WORLD'
+                fix_rotation_x = ['Bip01', 'Bip01 Pelvis', 'Bip01 Spine', 'Bip01 Spine1', 'Bip01 Spine2', 'Bip01 Neck', 'Bip01 Head',
+                                  'Bip01 L Thigh', 'Bip01 R Thigh', 'Bip01 L Calf', 'Bip01 R Calf',
+                                  'Bip01 L Foot', 'Bip01 R Foot',
+                                  'Bip01 L Clavicle', 'Bip01 R Clavicle', 'Bip01 L UpperArm', 'Bip01 R UpperArm', 'Bip01 L Forearm', 'Bip01 R Forearm',
+                                  'Bip01 L Hand', 'Bip01 R Hand',
+                                  'Bip01 L Finger0', 'Bip01 R Finger0', 'Bip01 L Finger01', 'Bip01 R Finger01', 'Bip01 L Finger02', 'Bip01 R Finger02',
+                                  'Bip01 L Finger1', 'Bip01 R Finger1', 'Bip01 L Finger11', 'Bip01 R Finger11', 'Bip01 L Finger12', 'Bip01 R Finger12',
+                                  'Bip01 L Finger2', 'Bip01 R Finger2', 'Bip01 L Finger21', 'Bip01 R Finger21', 'Bip01 L Finger22', 'Bip01 R Finger22']
+
+                order_xzy = ['Bip01 Spine1', 'Bip01 Spine2', 'Bip01 Neck', 'Bip01 Head', 'Bip01 L Calf', 'Bip01 R Calf',
+                             'Bip01 L Clavicle', 'Bip01 R Clavicle', 'Bip01 L UpperArm', 'Bip01 R UpperArm', 'Bip01 L Forearm', 'Bip01 R Forearm',
+                             'Bip01 L Hand', 'Bip01 R Hand',
+                             'Bip01 L Finger0', 'Bip01 R Finger0', 'Bip01 L Finger01', 'Bip01 R Finger01', 'Bip01 L Finger02', 'Bip01 R Finger02',
+                             'Bip01 L Finger1', 'Bip01 R Finger1', 'Bip01 L Finger11', 'Bip01 R Finger11', 'Bip01 L Finger12', 'Bip01 R Finger12',
+                             'Bip01 L Finger2', 'Bip01 R Finger2', 'Bip01 L Finger21', 'Bip01 R Finger21', 'Bip01 L Finger22', 'Bip01 R Finger22']
+                
+                order_zyx = ['the entire hand and its fingers', 'as a fallback']
+
+
+                # Note: Never copy location, always broken no matter how many fixes you wanted to throw into
+                # Due to constraints needing to use owner world space, this will cause it to use the world space
+                # location/rotation, instead of the local space one. Problem is that local space just simply
+                # doesn't work, I already tried it.
+                # consts = empty.constraints.new('COPY_LOCATION')
+                # consts.name = 'Retarget'
+                # consts.target = retarget_armature
+                # consts.subtarget = pose_bone.name
+                
+                if not empty.name in no_rotation:
+                    consts = empty.constraints.new('COPY_ROTATION')
+                    consts.name = 'Retarget'
+                    consts.target = retarget_armature
+                    consts.subtarget = pose_bone.name
+
+                    if empty.name in fix_rotation_x:
+                        consts.invert_x = True
+                    
+                    if empty.name in order_xzy:
+                        consts.euler_order = 'XZY'
             else:
                 if armature_hide:
                     pose_bone.location = mathutils.Vector()

@@ -240,7 +240,7 @@ def export_anim(context: bpy.types.Context, filepath: str, anim_ver: str, frame_
                 ani.write(struct.pack('<3f', *location)) # vTrans
                 ani.write(struct.pack('<I', time)) # iTime
     
-    return {'FINISHED'}
+    return filepath
 
 def export_entry(context: bpy.types.Context, filepath: str):
     anim_data_props = context.scene.io3d_animation_data
@@ -267,7 +267,7 @@ def export_entry(context: bpy.types.Context, filepath: str):
     with open(filepath, 'w+') as f:
         json.dump(animation, f)
 
-    return {'FINISHED'}
+    return filepath
 
 from bpy.types import Operator
 from bpy.props import StringProperty, IntProperty, EnumProperty
@@ -340,7 +340,10 @@ class AnimExport(Operator, ExportHelper):
         col.prop(self, "frame_end")
 
     def execute(self, context):
-        return export_anim(context, self.filepath, self.anim_ver, self.frame_range, self.frame_start, self.frame_end)
+        result = export_anim(context, self.filepath, self.anim_ver, self.frame_range, self.frame_start, self.frame_end)
+        self.report({'INFO'}, f'File saved "{result}"')
+
+        return {'FINISHED'}
 
     def invoke(self, context, event):
         self.frame_start = context.scene.frame_start
@@ -361,7 +364,10 @@ class EntryExport(Operator, ExportHelper):
     )
 
     def execute(self, context):
-        return export_entry(context, self.filepath)
+        result = export_entry(context, self.filepath)
+        self.report({'INFO'}, f'File saved: {result}')
+
+        return {'FINISHED'}
 
 def menu_func_export(self, context):
     self.layout.operator(AnimExport.bl_idname, text="Lost Saga Anim (.ani)", icon='ANIM')
