@@ -29,6 +29,30 @@ This section provides sample files made with `lost-saga-io3d` add-on, as well th
         [Light Camera Action 100fps :octicons-download-16:](../files/lights_camera_action_100fps_w_music.ani){.md-button :download}<br>
         **lights_camera_action_100fps_w_music.ani** • `ANI` • `363 KB`
 
+## Map (static)
+
+Model taken from [SFM workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=1885898159)
+
+![map](../images/smash_battlefield_map.png)
+
+!!! abstract "Downloads"
+
+    === ":simple-blender: Blend"
+
+        Blender 4.5.1+<br>
+        Project file
+
+        [Smash Battlefield :octicons-download-16:](../files/smash_battlefield.blend){.md-button :download}<br>
+        **smash_battlefield.blend** • `BLEND` • `10.9 MB`
+    
+    === ":material-cube-outline: Resource Pack"
+
+        Resource pack, included files: `msh` (collision and mesh), staticmodel `.txt`, material `.txt`, `dds` (texture, minimap, loading)<br>
+        Configuration is not included
+
+        [Smash Battlefield Pack :octicons-download-16:](../files/smash_battlefield.zip){.md-button :download}<br>
+        **smash_battlefield.zip** • `ZIP` • `12.3 MB`
+
 ## Static Mesh
 
 ![static mesh](../images/static_mesh.png)
