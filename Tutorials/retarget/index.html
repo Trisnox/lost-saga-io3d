@@ -16,7 +16,7 @@
         <link rel="prev" href="../exporting_animation/">
       
       
-        <link rel="next" href="../../SKL%20MSH%20Panel/">
+        <link rel="next" href="../legacy_retarget/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -24,7 +24,7 @@
     
     
       
-        <title>[Not Working] Retarget Animation - Lost Saga IO3D</title>
+        <title>Retarget Animation - Lost Saga IO3D</title>
       
     
     
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#importing-the-skeleton" class="md-skip">
+        <a href="#installing-the-addon" class="md-skip">
           Skip to content
         </a>
       
@@ -121,7 +121,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              [Not Working] Retarget Animation
+              Retarget Animation
             
           </span>
         </div>
@@ -681,7 +681,7 @@
   
   
   <span class="md-ellipsis">
-    [Not Working] Retarget Animation
+    Retarget Animation
     
   </span>
   
@@ -694,7 +694,7 @@
   
   
   <span class="md-ellipsis">
-    [Not Working] Retarget Animation
+    Retarget Animation
     
   </span>
   
@@ -715,6 +715,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#installing-the-addon" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing the addon
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#importing-the-skeleton" class="md-nav__link">
     <span class="md-ellipsis">
       Importing the Skeleton
@@ -724,18 +733,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#retargeting-the-animation" class="md-nav__link">
+  <a href="#matching-sourcetarget" class="md-nav__link">
     <span class="md-ellipsis">
-      Retargeting the Animation
+      Matching source/target
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#exporting-retarget" class="md-nav__link">
+  <a href="#configuring-bones" class="md-nav__link">
     <span class="md-ellipsis">
-      Exporting Retarget
+      Configuring Bones
     </span>
   </a>
   
@@ -754,6 +763,29 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../legacy_retarget/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    [Legacy] Retarget Animation
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1603,6 +1635,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#installing-the-addon" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing the addon
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#importing-the-skeleton" class="md-nav__link">
     <span class="md-ellipsis">
       Importing the Skeleton
@@ -1612,18 +1653,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#retargeting-the-animation" class="md-nav__link">
+  <a href="#matching-sourcetarget" class="md-nav__link">
     <span class="md-ellipsis">
-      Retargeting the Animation
+      Matching source/target
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#exporting-retarget" class="md-nav__link">
+  <a href="#configuring-bones" class="md-nav__link">
     <span class="md-ellipsis">
-      Exporting Retarget
+      Configuring Bones
     </span>
   </a>
   
@@ -1657,38 +1698,34 @@
   
 
 
-  <h1>[Not Working] Retarget Animation</h1>
+  <h1>Retarget Animation</h1>
 
-<div><div class="admonition failure">
-<p class="admonition-title">Warning</p>
-<p>Retargeting is currently nowhere near good or perfect, attempting to do so will not produce any doable results. Unfortunately, I have lost motivation to continue retarget. Working with Lost Saga skeleton is already enough as is due to weird skeleton they had. The current retarget is capable of accurately mimicking the rotation of all bones but legs and with twists on some bones.</p>
-</div>
+<div><p>Retarget involves the process of copying animation sourced from other armature, into another armature. While it might sounds simple, it's not the case with Lost Saga skeleton due to how their skeleton are formed. However, there is such addon that allows us to retarget animation properly.</p>
+<h2 id="installing-the-addon">Installing the addon</h2>
+<p>You need to <a href="https://extensions.blender.org/add-ons/bone-animation-copy-tool/">install this addon first</a></p>
 <div class="admonition warning">
-<p class="admonition-title">warning</p>
-<p>Retarget does not support retargeting position due to how Lost Saga skeleton are formed. Forcing position will make the result worse than it was.</p>
+<p class="admonition-title">Addon Support</p>
+<p>Since I am not the creator/owner of the addon, please do not ask me for assistance.</p>
 </div>
-<p>Retarget involves the process of copying animation sourced from other armature, into another armature. While it might sounds simple, it's not the case with Lost Saga skeleton due to how their skeleton are formed.</p>
-<div class="admonition info">
-<p class="admonition-title">Initial Rotation</p>
-<p>Here is what Lost Saga skeleton initial position/rotation looked like.</p>
-<p>It doesn't resemble anything like humanoid at all, the humanoid form is actually stored inside <a href="../../binary_structure/#biped"><code>LocalTMqRot</code> or <code>kObjectMatrix</code></a>. However, this initial rotation is still needed because animation quaternion calculate their rotation from this initial position, instead of rest rotation from humanoid</p>
-<p><a class="glightbox" href="../../images/losa_weird_skeleton.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="losa skeleton" src="../../images/losa_weird_skeleton.png"></a></p>
-</div>
-<p>Fortunately, I have create a solution to retargeting, even though it's not perfect.</p>
 <h2 id="importing-the-skeleton">Importing the Skeleton</h2>
-<p>First, <a href="../../SKL%20MSH%20Panel/skeleton_import/">import skeleton using retarget mode</a>, at which your skeleton should looked like this:</p>
-<p><a class="glightbox" href="../../images/retarget_armature.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="retarget skeleton" src="../../images/retarget_armature.png"></a></p>
-<p>It contains two skeleton, armature and empties. The armature are used for retarget animation, while the empties are used to export the animation.</p>
-<h2 id="retargeting-the-animation">Retargeting the Animation</h2>
-<p>Use the armature as the target armature for the retaget, you should adjust source armature to match with the target armature. After retargeting, the empties will copy the rotation from the retarget armature.</p>
-<p><a class="glightbox" href="../../videos/retargeting_animation.mp4" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><div class="video-container"><iframe src="../../videos/retargeting_animation.mp4" style="position:relative;width:100%;height:22.172vw" frameborder="0" allowfullscreen alt="type:video"></iframe></div></a></p>
-<h2 id="exporting-retarget">Exporting Retarget</h2>
-<p>After animation has been properly retargeted, select all empties, and then bake action (<code>F3</code> &gt; Bake Action). Make sure that <code>Visual Keying</code> and <code>Clear Constraints</code> is enabled.</p>
-<p><a class="glightbox" href="../../images/bake_action.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="bake action" src="../../images/bake_action.png"></a></p>
-<p>After baking, use the <a href="../../ANI%20Panel/apply_delta/"><code>Apply Delta Transforms</code> operator</a>, and then you can export them using <a href="../../ANI%20Panel/export_animation/"><code>Export Animation</code> operator</a>.</p>
+<p><a href="../../SKL%20MSH%20Panel/skeleton_import/">Import skeleton using advanced mode</a> with using <code>Armature</code> as its display.</p>
+<h2 id="matching-sourcetarget">Matching source/target</h2>
+<p>Assuming that you had imported the target armature, use losa skeleton as the source, and the target to copy animation from.</p>
+<p><a class="glightbox" href="../../images/source_target.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="source target armature" src="../../images/source_target.png"></a></p>
+<h2 id="configuring-bones">Configuring Bones</h2>
+<div class="admonition info">
+<p class="admonition-title">MMD Skeleton</p>
+<p>If you're using mmd skeleton, there exist <a href="../../sample_files/#mmd-bones-preset">pre-configured mapping for mmd skeleton</a></p>
+</div>
+<p>Select both armature, and then enter pose mode. After that, you can map the bones to copy animation from, as well fixing the rotation offset for each bone. Once you're done, it should looked like this more or less</p>
+<p><a class="glightbox" href="../../images/mapping.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="mapping" src="../../images/mapping.png"></a></p>
 <h2 id="final-result">Final Result</h2>
-<p>You can use the newly <code>.ani</code> file to the advanced skeleton to see and/or tweak the result before exporting to game. As stated previously, the final result is not good.</p>
-<p><a class="glightbox" href="../../videos/retarget_result.mp4" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><div class="video-container"><iframe src="../../videos/retarget_result.mp4" style="position:relative;width:100%;height:22.172vw" frameborder="0" allowfullscreen alt="type:video"></iframe></div></a></p></div>
+<p>After fixing the rotation, you can bake the animation and then <a href="../../ANI%20Panel/export_animation/">export them into <code>.ani</code></a></p>
+<p><a class="glightbox" href="../../videos/retarget_result_new.mp4" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><div class="video-container"><iframe src="../../videos/retarget_result_new.mp4" style="position:relative;width:100%;height:22.172vw" frameborder="0" allowfullscreen alt="type:video"></iframe></div></a></p>
+<div class="admonition info">
+<p class="admonition-title">Animation</p>
+<p>You can get the exported animation file <a href="../../sample_files/#mmd-retarget-animation">here</a></p>
+</div></div>
 
 
 
@@ -1738,13 +1775,13 @@
         
         
           
-          <a href="../../SKL%20MSH%20Panel/" class="md-footer__link md-footer__link--next" aria-label="Next: SKL MSH Panel">
+          <a href="../legacy_retarget/" class="md-footer__link md-footer__link--next" aria-label="Next: [Legacy] Retarget Animation">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                SKL MSH Panel
+                [Legacy] Retarget Animation
               </div>
             </div>
             <div class="md-footer__button md-icon">
