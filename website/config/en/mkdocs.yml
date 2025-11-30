@@ -47,7 +47,8 @@ nav:
     - Importing Animation: en/Tutorials/importing_animation.md
     - Exporting Mesh: en/Tutorials/exporting_mesh.md
     - Exporting Animation: en/Tutorials/exporting_animation.md
-    - "[Not Working] Retarget Animation": en/Tutorials/retarget.md
+    - Retarget Animation: en/Tutorials/retarget.md
+    - "[Legacy] Retarget Animation": en/Tutorials/legacy_retarget.md
   - SKL MSH Panel:
     - en/SKL MSH Panel/index.md
     - Skeleton Import: en/SKL MSH Panel/skeleton_import.md

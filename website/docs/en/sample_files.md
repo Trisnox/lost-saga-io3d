@@ -29,7 +29,38 @@ This section provides sample files made with `lost-saga-io3d` add-on, as well th
         [Light Camera Action 100fps :octicons-download-16:](../files/lights_camera_action_100fps_w_music.ani){.md-button :download}<br>
         **lights_camera_action_100fps_w_music.ani** • `ANI` • `363 KB`
 
-## Map (static)
+## MMD Retarget Animation
+
+Motion is based off [Ego Rock by ITTW46](https://www.youtube.com/watch?v=iker7RiKme4)
+
+![type:video](../videos/ego_rock_web.mp4)
+
+!!! abstract "Downloads"
+
+    === ":material-cube-outline: Resource Pack"
+        Resource pack, included files: `ani`, `wav` (music)<br>
+        Configuration is not included
+
+        [Ego Rock Motion Pack :octicons-download-16:](../files/ego_rock_motion_pack.zip){.md-button :download}<br>
+        **ego_rock_motion_path.zip** • `ZIP` • `21.1 MB`
+
+
+## MMD Bones Preset
+
+Bone preset for [`Bone Animation Copy Tool` addon](https://extensions.blender.org/add-ons/bone-animation-copy-tool/).
+
+This preset file was made using [this skeleton](https://www.deviantart.com/mmdfakewings18/art/Semi-Bones-353776916). **Do not translate the bone names after importing. Also disable IK on skeleton.**
+
+!!! abstract "Downloads"
+    
+    === ":material-animation: MMD Bone Preset"
+
+        File format is supposed to be `Python`, but mkdocs returns 404 when attempting to download python files, please extract them to appropriate location
+
+        [MMD Bone Preset :octicons-download-16:](../files/MMD_to_Losa_skeleton_advanced.zip){.md-button :download}<br>
+        **mmd_to_losa_skeleton_advanced.zip** • `ZIP` • `1.85 KB`
+
+## Static Map | Smash Battlefield
 
 Model taken from [SFM workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=1885898159)
 
@@ -52,6 +83,22 @@ Model taken from [SFM workshop](https://steamcommunity.com/sharedfiles/filedetai
 
         [Smash Battlefield Pack :octicons-download-16:](../files/smash_battlefield.zip){.md-button :download}<br>
         **smash_battlefield.zip** • `ZIP` • `12.3 MB`
+
+## Static Map | Imperial Sanctum
+
+Based off [Imperial Sanctum](https://sketchfab.com/3d-models/mlbb-map-imperial-free-download-edce85a472ab4375956c1f5edddc0d59)
+
+![map](../images/imperial_sanctum_map.png)
+
+!!! abstract "Downloads"
+
+    === ":material-cube-outline: Resource Pack"
+
+        Resource pack, included files: `msh` (collision and mesh), staticmodel `.txt`, material `.txt`, `dds` (texture, minimap, loading)<br>
+        Configuration is not included
+
+        [Imperial Sanctum Pack :octicons-download-16:](../files/imperial_sanctum.zip){.md-button :download}<br>
+        **imperial_sanctum.zip** • `ZIP` • `51.3 MB`
 
 ## Static Mesh
 

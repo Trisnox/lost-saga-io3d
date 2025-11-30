@@ -1,45 +1,40 @@
 ---
-title: "[Not Working] Retarget Animation"
+title: "Retarget Animation"
 ---
 
-!!! failure "Warning"
-    Retargeting is currently nowhere near good or perfect, attempting to do so will not produce any doable results. Unfortunately, I have lost motivation to continue retarget. Working with Lost Saga skeleton is already enough as is due to weird skeleton they had. The current retarget is capable of accurately mimicking the rotation of all bones but legs and with twists on some bones.
+Retarget involves the process of copying animation sourced from other armature, into another armature. While it might sounds simple, it's not the case with Lost Saga skeleton due to how their skeleton are formed. However, there is such addon that allows us to retarget animation properly.
 
-!!! warning "warning"
-    Retarget does not support retargeting position due to how Lost Saga skeleton are formed. Forcing position will make the result worse than it was.
+## Installing the addon
+You need to [install this addon first](https://extensions.blender.org/add-ons/bone-animation-copy-tool/)
 
-Retarget involves the process of copying animation sourced from other armature, into another armature. While it might sounds simple, it's not the case with Lost Saga skeleton due to how their skeleton are formed.
+!!! warning "Addon Support"
+    Since I am not the creator/owner of the addon, please do not ask me for assistance.
 
-!!! info "Initial Rotation"
-    Here is what Lost Saga skeleton initial position/rotation looked like.
-
-    It doesn't resemble anything like humanoid at all, the humanoid form is actually stored inside [`LocalTMqRot` or `kObjectMatrix`](../binary_structure.md#biped). However, this initial rotation is still needed because animation quaternion calculate their rotation from this initial position, instead of rest rotation from humanoid
-    
-    ![losa skeleton](../images/losa_weird_skeleton.png)
-
-Fortunately, I have create a solution to retargeting, even though it's not perfect.
 
 ## Importing the Skeleton
-First, [import skeleton using retarget mode](../SKL%20MSH%20Panel/skeleton_import.md), at which your skeleton should looked like this:
-
-![retarget skeleton](../images/retarget_armature.png)
-
-It contains two skeleton, armature and empties. The armature are used for retarget animation, while the empties are used to export the animation.
-
-## Retargeting the Animation
-Use the armature as the target armature for the retaget, you should adjust source armature to match with the target armature. After retargeting, the empties will copy the rotation from the retarget armature.
-
-![type:video](../videos/retargeting_animation.mp4)
+[Import skeleton using advanced mode](../SKL%20MSH%20Panel/skeleton_import.md) with using `Armature` as its display.
 
 
-## Exporting Retarget
-After animation has been properly retargeted, select all empties, and then bake action (`F3` > Bake Action). Make sure that `Visual Keying` and `Clear Constraints` is enabled.
+## Matching source/target
+Assuming that you had imported the target armature, use losa skeleton as the source, and the target to copy animation from.
 
-![bake action](../images/bake_action.png)
+![source target armature](../images/source_target.png)
 
-After baking, use the [`Apply Delta Transforms` operator](../ANI%20Panel/apply_delta.md), and then you can export them using [`Export Animation` operator](../ANI%20Panel/export_animation.md).
+
+## Configuring Bones
+
+!!! info "MMD Skeleton"
+    If you're using mmd skeleton, there exist [pre-configured mapping for mmd skeleton](../sample_files.md#mmd-bones-preset)
+
+Select both armature, and then enter pose mode. After that, you can map the bones to copy animation from, as well fixing the rotation offset for each bone. Once you're done, it should looked like this more or less
+
+![mapping](../images/mapping.png)
+
 
 ## Final Result
-You can use the newly `.ani` file to the advanced skeleton to see and/or tweak the result before exporting to game. As stated previously, the final result is not good.
+After fixing the rotation, you can bake the animation and then [export them into `.ani`](../ANI%20Panel/export_animation.md)
 
-![type:video](../videos/retarget_result.mp4)
+![type:video](../videos/retarget_result_new.mp4)
+
+!!! info "Animation"
+    You can get the exported animation file [here](../sample_files.md#mmd-retarget-animation)
