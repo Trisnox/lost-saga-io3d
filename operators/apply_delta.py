@@ -2,8 +2,9 @@ import bpy
 import mathutils
 import numpy as np
 
-
-def is_using_newer_version():
+# 4.4 introduces slotted actions
+# https://developer.blender.org/docs/release_notes/4.4/python_api/#slotted-actions
+def is_using_4_4():
     return bpy.app.version >= (4, 4, 0)
 
 def apply_delta(context):
@@ -21,7 +22,7 @@ def apply_delta(context):
 
         action = bone.animation_data.action
 
-        if is_using_newer_version:
+        if is_using_4_4():
             fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
         else:
             fcurves = action.fcurves

@@ -244,7 +244,7 @@ def export_material(context: bpy.types.Context, filepath: str):
     return filepath
 
 
-def export_mesh(context: bpy.types.Context, filepath: str, surpress_split: bool, preview_split: bool, mesh_type: str, use_normals: bool, use_uv: bool, use_uv1: bool, use_weights: bool):
+def export_mesh(context: bpy.types.Context, filepath: str, surpress_split: bool, preview_split: bool, mesh_type: str, use_normals: bool, use_uv: bool, use_uv1: bool, use_weights: bool, apply_transforms: bool, apply_modifiers: bool, mesh_scale: float):
     mesh_type = int(mesh_type)
 
     original_objects = context.selected_objects
@@ -252,10 +252,38 @@ def export_mesh(context: bpy.types.Context, filepath: str, surpress_split: bool,
 
     meshes = sorted(context.selected_objects, key=lambda x: x.name)
     for object in meshes:
+        bpy.ops.object.select_all(action='DESELECT')
+        object.select_set(True)
+        context.view_layer.objects.active = object
+
+        if apply_modifiers:
+            for modifier in object.modifiers:
+                bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+        if apply_transforms:
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+        if not preview_split and not mesh_scale == 1.0:
+            object.scale.x = mesh_scale
+            object.scale.y = mesh_scale
+            object.scale.z = mesh_scale
+
+            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+
         if not preview_split:
             object.rotation_euler.x = math.radians(90)
             object.rotation_euler.z = math.radians(180)
             object.scale.x = -1
+            bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+
+            try:
+                bpy.ops.object.mode_set(mode='EDIT')
+            except:
+                pass
+            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.mesh.flip_normals()
+            bpy.ops.object.mode_set(mode='OBJECT')
+
         object.modifiers.new(name='Triangulate_' + object.name, type='TRIANGULATE')
         bpy.ops.object.modifier_apply(modifier='Triangulate_' + object.name, use_selected_objects=True)
 
@@ -335,17 +363,6 @@ def export_mesh(context: bpy.types.Context, filepath: str, surpress_split: bool,
                 bmesh.ops.split_edges(bm, edges=[e for e in bm.edges if e.seam])
                 bm.to_mesh(mesh_data)
                 bm.free()
-    
-    if not preview_split:
-        bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
-
-        try:
-            bpy.ops.object.mode_set(mode='EDIT')
-        except:
-            pass
-        bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.mesh.flip_normals()
-        bpy.ops.object.mode_set(mode='OBJECT')
 
     # if normalize_weights and mesh_type == 1:
     #     try:
@@ -494,7 +511,7 @@ def export_mesh(context: bpy.types.Context, filepath: str, surpress_split: bool,
             f.write(struct.pack('<I', face_count))
         
         f.write(struct.pack('<I', len(vertices))) # vertex count
-        
+
         # Check is not needed for this one... why would you?
         for vert in vertices:
             f.write(struct.pack('<3f', *vert.co))
@@ -618,7 +635,7 @@ def export_mesh(context: bpy.types.Context, filepath: str, surpress_split: bool,
     return filepath
 
 
-def export_collision(context: bpy.types.Context, filepath: str):
+def export_collision(context: bpy.types.Context, filepath: str, apply_transforms: bool, apply_modifiers: bool, mesh_scale: float):
     original_object = context.active_object
     bpy.ops.object.select_all(action='DESELECT')
     original_object.select_set(state=True)
@@ -626,6 +643,20 @@ def export_collision(context: bpy.types.Context, filepath: str):
 
     bpy.ops.object.duplicate()
     object = context.active_object
+
+    if apply_modifiers:
+        for modifier in object.modifiers:
+            bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+    if apply_transforms:
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    
+    if not mesh_scale == 1.0:
+        object.scale.x = mesh_scale
+        object.scale.y = mesh_scale
+        object.scale.z = mesh_scale
+
+        bpy.ops.object.transform_apply(location = False, rotation = False, scale = True)
 
     object.rotation_euler.x = math.radians(90)
     object.rotation_euler.z = math.radians(180)
@@ -642,8 +673,7 @@ def export_collision(context: bpy.types.Context, filepath: str):
     bpy.ops.object.mode_set(mode='OBJECT')
 
     object.modifiers.new(name='Triangulate_' + object.name, type='TRIANGULATE')
-    bpy.ops.object.modifier_apply(
-        modifier='Triangulate_' + object.name, use_selected_objects=True)
+    bpy.ops.object.modifier_apply(modifier='Triangulate_' + object.name, use_selected_objects=True)
 
     mesh_data = object.data
 
@@ -673,7 +703,7 @@ def export_collision(context: bpy.types.Context, filepath: str):
 
 
 from bpy.types import Operator
-from bpy.props import StringProperty, BoolProperty, EnumProperty, IntProperty
+from bpy.props import StringProperty, BoolProperty, EnumProperty, FloatProperty
 from bpy_extras.io_utils import ExportHelper
 
 
@@ -726,7 +756,7 @@ class MatExport(Operator, ExportHelper):
 
 
 class MeshExport(Operator, ExportHelper):
-    """Export mesh into Lost Saga Mesh (.msh). Experimental"""
+    """Export mesh into Lost Saga Mesh (.msh)"""
     bl_idname = "io3d.mesh_export"
     bl_label = "Export mesh into Lost Saga Mesh (.msh)"
 
@@ -774,6 +804,25 @@ class MeshExport(Operator, ExportHelper):
         default=True,
     )
 
+    apply_transforms: BoolProperty(
+        name='Apply Transforms',
+        description='Whether to apply transformations before exporting the mesh',
+        default=True,
+    )
+
+    apply_modifiers: BoolProperty(
+        name='Apply Modifiers',
+        description='Whether to apply modifiers before exporting the mesh',
+        default=True,
+    )
+
+    mesh_scale: FloatProperty(
+        name="Scale",
+        description="Mesh scale when exported",
+        default=1.0,
+        soft_min=0.0,
+    )
+
     def draw(self, context):
         msh_props = context.scene.io3d_msh_props
 
@@ -805,6 +854,20 @@ class MeshExport(Operator, ExportHelper):
         col.enabled = (bool(self.mesh_type == '1'))
         col.prop(self, "weights")
 
+        col.separator(type='LINE')
+
+        col = layout.column()
+        col.prop(self, "apply_transforms")
+
+        col = layout.column()
+        col.prop(self, "apply_modifiers")
+
+        col.separator(type='LINE')
+
+        col = layout.column()
+        col.prop(self, "mesh_scale")
+
+
     @classmethod
     def poll(cls, context):
         object = context.active_object
@@ -812,7 +875,7 @@ class MeshExport(Operator, ExportHelper):
 
     def execute(self, context):
         surpress_split = context.scene.io3d_msh_props.surpress_split
-        result = export_mesh(context, self.filepath, surpress_split, False, self.mesh_type, self.normals, self.uv, self.uv1, self.weights)
+        result = export_mesh(context, self.filepath, surpress_split, False, self.mesh_type, self.normals, self.uv, self.uv1, self.weights, self.apply_transforms, self.apply_modifiers, self.mesh_scale)
         self.report({'INFO'}, f'File saved "{result}"')
 
         return {'FINISHED'}
@@ -846,8 +909,27 @@ class CollExport(Operator, ExportHelper):
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )
 
+    apply_transforms: BoolProperty(
+        name='Apply Transforms',
+        description='Whether to apply transformations before exporting the collision mesh',
+        default=True,
+    )
+
+    apply_modifiers: BoolProperty(
+        name='Apply Modifiers',
+        description='Whether to apply modifiers before exporting the collision mesh',
+        default=True,
+    )
+
+    mesh_scale: FloatProperty(
+        name="Scale",
+        description="Mesh collision scale when exported",
+        default=1.0,
+        soft_min=0.0,
+    )
+
     def execute(self, context):
-        result = export_collision(context, self.filepath)
+        result = export_collision(context, self.filepath, self.apply_transforms, self.apply_modifiers, self.mesh_scale)
         self.report({'INFO'}, f'File saved "{result}"')
 
         return {'FINISHED'}

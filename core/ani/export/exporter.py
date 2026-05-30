@@ -5,8 +5,9 @@ import struct
 
 from ..compressor import comp_small_three, comp_8_bytes
 
-
-def is_using_newer_version():
+# 4.4 introduces slotted actions
+# https://developer.blender.org/docs/release_notes/4.4/python_api/#slotted-actions
+def is_using_4_4():
     return bpy.app.version >= (4, 4, 0)
 
 def export_anim(context: bpy.types.Context, filepath: str, anim_ver: str, frame_range: str, frame_start: int, frame_end: int):
@@ -79,7 +80,7 @@ def export_anim(context: bpy.types.Context, filepath: str, anim_ver: str, frame_
         bone_fcurves_location = []
         bone_fcurves_rotation = []
 
-        if is_using_newer_version:
+        if is_using_4_4():
             fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
         else:
             fcurves = action.fcurves

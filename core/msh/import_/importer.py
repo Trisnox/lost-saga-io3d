@@ -13,7 +13,9 @@ from ...classes.seeker import Seeker
 from ...classes.mesh import VertexComponent, MeshData, MeshType, BlendWeight, SKIN_COLOR_DICT, TOON_SHADER_INDEX
 
 
-def is_using_newer_version():
+# 4.4 introduces slotted actions
+# https://developer.blender.org/docs/release_notes/4.4/python_api/#slotted-actions
+def is_using_4_4():
     return bpy.app.version >= (4, 4, 0)
 
 def is_mesh_file(bytes):
@@ -22,7 +24,7 @@ def is_mesh_file(bytes):
 def is_collision_file(bytes):
     return bytes == 5459267
 
-def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str = None, skin_color: str = None, generate_outline: bool = False, use_rim_light: bool = False, surpress_color: bool = False, separate_material: bool = False, merge_faces: bool = False):    
+def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str = None, skin_color: str = None, generate_outline: bool = False, use_rim_light: bool = False, surpress_color: bool = False, separate_material: bool = False, merge_faces: bool = False, mesh_scale: float = 1.0):    
     MESH_VERSION = 2000
     VERTEX_COLOR_MESH_VERSION = 2001
     MESH_CONTROL_POINT_VERSION = 2002
@@ -168,7 +170,7 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
     bm.free()
 
     mesh_object = bpy.data.objects.new(mesh_name, mesh_data)
-    bpy.context.collection.objects.link(mesh_object)
+    context.collection.objects.link(mesh_object)
     
     mesh_object["Bounding Box min"] = bounding_box_min
     mesh_object["Bounding Box max"] = bounding_box_max
@@ -269,8 +271,8 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
     if merge_faces:
         for mesh in meshes:
             bpy.ops.object.select_all(action='DESELECT')
-            mesh_object.select_set(True)
-            context.view_layer.objects.active = mesh_object
+            mesh.select_set(True)
+            context.view_layer.objects.active = mesh
 
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='DESELECT')
@@ -280,6 +282,18 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
             bpy.ops.mesh.remove_doubles()
 
             bpy.ops.object.mode_set(mode='OBJECT')
+
+    if not mesh_scale == 1.0:
+        for mesh in meshes:
+            bpy.ops.object.select_all(action='DESELECT')
+            mesh.select_set(True)
+            context.view_layer.objects.active = mesh
+
+            mesh.scale.x = mesh_scale
+            mesh.scale.y = mesh_scale
+            mesh.scale.z = mesh_scale
+
+            bpy.ops.object.transform_apply(location = False, rotation = False, scale = True)
 
     if not resource_folder:
         return {'FINISHED'}
@@ -336,7 +350,7 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
                 context.scene.frame_set(current_frame)
 
                 action = material.node_tree.animation_data.action
-                if is_using_newer_version:
+                if is_using_4_4():
                     fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
                 else:
                     fcurves = action.fcurves
@@ -359,7 +373,7 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
             context.scene.frame_set(current_frame)
 
             action = material.node_tree.animation_data.action
-            if is_using_newer_version:
+            if is_using_4_4():
                 fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
             else:
                 fcurves = action.fcurves
@@ -491,7 +505,7 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
                         mesh.data.materials.append(outline_material)
 
                         outline_modifier = mesh.modifiers.new(name='Losa Outline', type='SOLIDIFY')
-                        outline_modifier.thickness = outline_thickness
+                        outline_modifier.thickness = outline_thickness * mesh_scale
                         outline_modifier.offset = 1.0
                         outline_modifier.use_rim_only = True
                         outline_modifier.use_flip_normals = True
@@ -657,7 +671,7 @@ def import_mesh(context: bpy.types.Context, filepath: str, resource_folder: str 
                     rotate_UV(rotate_anim, mapping_node, material)
     return {'FINISHED'}
 
-def import_collision(context: bpy.types.Context, filepath: str):
+def import_collision(context: bpy.types.Context, filepath: str, mesh_scale: float):
     mesh_name = pathlib.Path(filepath).stem + '_collision'
 
     with open(filepath, 'rb') as f:
@@ -713,10 +727,17 @@ def import_collision(context: bpy.types.Context, filepath: str):
     bpy.ops.mesh.flip_normals()
     bpy.ops.object.mode_set(mode='OBJECT')
 
+    if not mesh_scale == 1.0:
+        mesh_object.scale.x = mesh_scale
+        mesh_object.scale.y = mesh_scale
+        mesh_object.scale.z = mesh_scale
+
+        bpy.ops.object.transform_apply(location = False, rotation = False, scale = True)
+
     return {'FINISHED'}
 
 from bpy_extras.io_utils import ImportHelper
-from bpy.props import StringProperty, CollectionProperty, BoolProperty, EnumProperty
+from bpy.props import StringProperty, CollectionProperty, BoolProperty, EnumProperty, FloatProperty
 from bpy.types import Operator, PropertyGroup
 
 
@@ -779,6 +800,13 @@ class LosaMesh(Operator, ImportHelper):
         description="If checked, blender will attempt marge the mesh by distance, which will make outline more clean (may cause UV issues on some models)",
         default=False
     )
+
+    mesh_scale: FloatProperty(
+        name="Scale",
+        description="Mesh scale when imported",
+        default=1.0,
+        soft_min=0.0,
+    )
     
     files: CollectionProperty(type=PropertyGroup)
 
@@ -800,13 +828,18 @@ class LosaMesh(Operator, ImportHelper):
         col = layout.column()
         col.prop(self, "separate_material")
         col.enabled = (bool(self.surpress_color))
+
+        col = layout.column()
+        col.separator(factor=1.0, type='LINE')
+        col = col.column()
+        col.prop(self, "mesh_scale")
     
     def execute(self, context):
         path = pathlib.Path(self.filepath)
         folder = path.parent
         for file in self.files:
             filepath = str(folder.joinpath(file.name))
-            import_mesh(context, filepath, context.scene.io3d_resource_path.path, self.default_skin_color, self.generate_outline, self.use_rim_light, self.surpress_color, self.separate_material, self.merge_faces)
+            import_mesh(context, filepath, context.scene.io3d_resource_path.path, self.default_skin_color, self.generate_outline, self.use_rim_light, self.surpress_color, self.separate_material, self.merge_faces, self.mesh_scale)
 
         if len(self.files) > 1:
             self.report({'INFO'}, f'Successfully imported {len(self.files)} meshes')
@@ -830,12 +863,19 @@ class LosaCol(Operator, ImportHelper):
 
     files: CollectionProperty(type=PropertyGroup)
 
+    mesh_scale: FloatProperty(
+        name="Scale",
+        description="Mesh collision scale when imported",
+        default=1.0,
+        soft_min=0.0,
+    )
+
     def execute(self, context):
         path = pathlib.Path(self.filepath)
         folder = path.parent
         for file in self.files:
             filepath = str(folder.joinpath(file.name))
-            import_collision(context, filepath)
+            import_collision(context, filepath, self.mesh_scale)
             
         if len(self.files) > 1:
             self.report({'INFO'}, f'Successfully imported {len(self.files)} collision meshes')

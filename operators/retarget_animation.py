@@ -2,8 +2,9 @@ import bpy
 import math
 import mathutils
 
-
-def is_using_newer_version():
+# 4.4 introduces slotted actions
+# https://developer.blender.org/docs/release_notes/4.4/python_api/#slotted-actions
+def is_using_4_4():
     return bpy.app.version >= (4, 4, 0)
 
 def retarget_animation(context: bpy.types.Context):
@@ -46,7 +47,7 @@ def retarget_animation(context: bpy.types.Context):
         data_path_rotation = f'pose.bones["{bone_name}"].rotation_quaternion'
 
         bone_fcurves_rotation = []
-        if is_using_newer_version:
+        if is_using_4_4():
             fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
         else:
             fcurves = action.fcurves

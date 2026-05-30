@@ -2,7 +2,9 @@ import bpy
 import mathutils
 import numpy as np
 
-def is_using_newer_version():
+# 4.4 introduces slotted actions
+# https://developer.blender.org/docs/release_notes/4.4/python_api/#slotted-actions
+def is_using_4_4():
     return bpy.app.version >= (4, 4, 0)
 
 def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, frame_range: str, frame_start: int, frame_end: int, apply_rest: bool):
@@ -51,7 +53,7 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
         if not armature_object.animation_data:
             armature_object.animation_data_create()
         
-        if is_using_newer_version():
+        if is_using_4_4():
             if not action.slots:
                 slot = action.slots.new(id_type='OBJECT', name=armature_object.name)
             else:
@@ -136,7 +138,7 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
             if not bone.animation_data:
                 bone.animation_data_create()
 
-            if is_using_newer_version():
+            if is_using_4_4():
                 if not action.slots:
                     slot = action.slots.new(id_type='OBJECT', name=bone.name)
                 else:
@@ -158,7 +160,7 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
         bone_fcurves_location = []
         bone_fcurves_rotation = []
         
-        if is_using_newer_version:
+        if is_using_4_4():
             fcurves = action.layers[0].strips[0].channelbag(action.slots[0]).fcurves
         else:
             fcurves = action.fcurves
@@ -170,13 +172,13 @@ def apply_animation(context: bpy.types.Context, fps: int, frame_offset: int, fra
                 bone_fcurves_rotation.append(fcurve)
 
         if not bone_fcurves_location:
-            if is_using_newer_version:
+            if is_using_4_4():
                 bone_fcurves_location = [fcurves.new(data_path=data_path_location, index=i) for i in range(3)]
             else:
                 bone_fcurves_location = [fcurves.new(data_path=data_path_location, index=i, action_group=bone.name) for i in range(3)]
 
         if not bone_fcurves_rotation:
-            if is_using_newer_version:
+            if is_using_4_4():
                 bone_fcurves_rotation = [fcurves.new(data_path=data_path_rotation, index=i) for i in range(4)]
             else:
                 bone_fcurves_rotation = [fcurves.new(data_path=data_path_rotation, index=i, action_group=bone.name) for i in range(4)]

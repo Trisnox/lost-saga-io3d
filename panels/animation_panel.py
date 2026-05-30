@@ -44,8 +44,8 @@ class ANIMATION_PANEL(bpy.types.Panel):
         row.label(text='Animation:', icon='POSE_HLT')
         col = layout.column()
         col.operator('io3d.anim_export', text='Export Animation', icon='ANIM')
-        col = layout.column()
-        col.operator('io3d.apply_delta', text='Apply Delta Transformations', icon='DRIVER')
+        # col = layout.column()
+        # col.operator('io3d.apply_delta', text='Apply Delta Transformations', icon='DRIVER')
 
         col = layout.column()
         col.label(text='In order to use animation, import')

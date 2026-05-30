@@ -564,7 +564,7 @@ class LosaSkeleton(Operator, ImportHelper):
         items=(
             ("LITE", "Lite", "Same as advanced, but the pose is set as rest pose. Intended for weight painting"),
             ("ADVANCED", "Advanced", "Import skeleton by using y-axis bone rotation. Intended for animation (import/export)"),
-            ("RETARGET", "Retarget", "Same as advanced, but the skeleton has delta transformation applied. Can be used to retargeting animation."),
+            # ("RETARGET", "Retarget", "Same as advanced, but the skeleton has delta transformation applied. Can be used to retargeting animation."),
             ("LEGACY", "Legacy", "Import skeleton by using the matrix value. Intended for weight painting. Not recommended for usage"),
         ),
         default="LITE",
